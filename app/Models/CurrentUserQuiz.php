@@ -16,5 +16,7 @@ class CurrentUserQuiz extends Model
         'user_id'
     ];
 
+    protected $table = 'current_user_quiz';
+
     public $timestamps = false;
 }

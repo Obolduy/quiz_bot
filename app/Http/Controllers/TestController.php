@@ -2,44 +2,34 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Answers;
+use App\Models\CorrectAnswers;
+use App\Models\CurrentUserQuiz;
+use App\Models\PassedQuizes;
+use App\Models\Questions;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class TestController extends Controller
 {
     public function test(Request $request)
-    {
-        // он должен проверять был ли вопрос уже задан пользователю
-        // в current_user_quiz пишется на какие вопросы юзер ответил
-        // берутся каждый раз все вопросы из таблицы с определенным quiz_id и перебираются
-        // и проверка есть ли айди этого вопроса в current_user_quiz рядом с айди пользователя
-        // если нет - задаем, да - скипаем
-        // либо создать таблицу пройденных ВОПРОСОВ а не ответов
-        
+    {   
         $quiz_id = 1;
         $user_id = 1;
         
         if ($request->isMethod('GET')) {
-            $questions = DB::table('questions')
-                        ->select('*')
-                        ->where('quiz_id', '=', $quiz_id)
-                        ->get();
+            $questions = Questions::where('quiz_id', $quiz_id)->get();
 
             $question_text = '';
 
             foreach ($questions as $question) {
-                $passed_questions = DB::table('current_user_quiz')
-                                    ->select('passed_question_id')
-                                    ->where('user_id', '=', 1)
-                                    ->where('passed_question_id', '=', $question->id)
+                $passed_questions = CurrentUserQuiz::where('user_id', 1)
+                                    ->where('passed_question_id', $question->id)
                                     ->first();
 
                 if (!$passed_questions) {
                     $question_text = $question->question;
-                    $answers = DB::table('answers')
-                                ->select('answer', 'id')
-                                ->where('question_id', '=', $question->id)
-                                ->get();
+
+                    $answers = Answers::where('question_id', $question->id)->get();
 
                     break;
                 }
@@ -48,25 +38,22 @@ class TestController extends Controller
             if ($question_text == '') {
                 $score = 0;
 
-                $current_user_quiz = DB::table('current_user_quiz')
-                                ->select('*')
-                                ->where('user_id', '=', $user_id)
-                                ->where('quiz_id', '=', $quiz_id)
-                                ->get();
+                $current_user_quiz = CurrentUserQuiz::where('user_id', '=', $user_id)
+                                    ->where('quiz_id', '=', $quiz_id)->get();
                 
                 foreach ($current_user_quiz as $elem) {
-                    $correct_answers = DB::table('correct_answers')
-                                        ->select('*')
-                                        ->where('question_id', '=', $elem->passed_question_id)
+                    $correct_answers = CorrectAnswers::where('question_id', $elem->passed_question_id)
                                         ->first();
+
 
                     if ($correct_answers->answer_id == $elem->passed_answer_id) {
                         $score++;
                     }
                 }
 
-                DB::table('passed_quizes')->insert([
-                    'passed_quiz_id' => $quiz_id, 'user_id' => $user_id,
+                PassedQuizes::create([
+                    'passed_quiz_id' => $quiz_id, 
+                    'user_id' => $user_id,
                     'total_score' => $score
                 ]);
                 
@@ -76,14 +63,13 @@ class TestController extends Controller
             return view('welcome', ['question_text' => $question_text, 'answers' => $answers]);
         }
 
-        $passed_question_id = DB::table('answers')
-                                ->select('question_id')
-                                ->where('id', '=', $request->answer)
-                                ->first();
+        $passed_question_id = Answers::find($request->answer);
 
-        DB::table('current_user_quiz')->insert([
-            'quiz_id' => $quiz_id, 'user_id' => $user_id,
-            'passed_question_id' => $passed_question_id->question_id, 'passed_answer_id' => $request->answer
+        CurrentUserQuiz::create([
+            'quiz_id' => $quiz_id,
+            'user_id' => $user_id,
+            'passed_question_id' => $passed_question_id->question_id,
+            'passed_answer_id' => $request->answer
         ]);
 
         return redirect('/biba');
