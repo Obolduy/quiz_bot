@@ -8,70 +8,74 @@ use App\Models\CurrentUserQuiz;
 use App\Models\PassedQuizes;
 use App\Models\Questions;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Redis;
 
 class TestController extends Controller
 {
     public function test(Request $request)
     {   
-        $quiz_id = 1;
-        $user_id = 1;
+        // session(['TESTKEY' => 'TESTVALUE']);
+        // echo session('TESTKEY');
+        echo Redis::hmget('1', 'status_id')[0];
+        // $quiz_id = 1;
+        // $user_id = 1;
         
-        if ($request->isMethod('GET')) {
-            $questions = Questions::where('quiz_id', $quiz_id)->get();
+        // if ($request->isMethod('GET')) {
+        //     $questions = Questions::where('quiz_id', $quiz_id)->get();
 
-            $question_text = '';
+        //     $question_text = '';
 
-            foreach ($questions as $question) {
-                $passed_questions = CurrentUserQuiz::where('user_id', 1)
-                                    ->where('passed_question_id', $question->id)
-                                    ->first();
+        //     foreach ($questions as $question) {
+        //         $passed_questions = CurrentUserQuiz::where('user_id', 1)
+        //                             ->where('passed_question_id', $question->id)
+        //                             ->first();
 
-                if (!$passed_questions) {
-                    $question_text = $question->question;
+        //         if (!$passed_questions) {
+        //             $question_text = $question->question;
 
-                    $answers = Answers::where('question_id', $question->id)->get();
+        //             $answers = Answers::where('question_id', $question->id)->get();
 
-                    break;
-                }
-            }
+        //             break;
+        //         }
+        //     }
 
-            if ($question_text == '') {
-                $score = 0;
+        //     if ($question_text == '') {
+        //         $score = 0;
 
-                $current_user_quiz = CurrentUserQuiz::where('user_id', '=', $user_id)
-                                    ->where('quiz_id', '=', $quiz_id)->get();
+        //         $current_user_quiz = CurrentUserQuiz::where('user_id', '=', $user_id)
+        //                             ->where('quiz_id', '=', $quiz_id)->get();
                 
-                foreach ($current_user_quiz as $elem) {
-                    $correct_answers = CorrectAnswers::where('question_id', $elem->passed_question_id)
-                                        ->first();
+        //         foreach ($current_user_quiz as $elem) {
+        //             $correct_answers = CorrectAnswers::where('question_id', $elem->passed_question_id)
+        //                                 ->first();
 
 
-                    if ($correct_answers->answer_id == $elem->passed_answer_id) {
-                        $score++;
-                    }
-                }
+        //             if ($correct_answers->answer_id == $elem->passed_answer_id) {
+        //                 $score++;
+        //             }
+        //         }
 
-                PassedQuizes::create([
-                    'passed_quiz_id' => $quiz_id, 
-                    'user_id' => $user_id,
-                    'total_score' => $score
-                ]);
+        //         PassedQuizes::create([
+        //             'passed_quiz_id' => $quiz_id, 
+        //             'user_id' => $user_id,
+        //             'total_score' => $score
+        //         ]);
                 
-                echo "Колличество набранных Вами баллов: $score";
-            }
+        //         echo "Колличество набранных Вами баллов: $score";
+        //     }
 
-            return view('welcome', ['question_text' => $question_text, 'answers' => $answers]);
-        }
+        //     return view('welcome', ['question_text' => $question_text, 'answers' => $answers]);
+        // }
 
-        $passed_question_id = Answers::find($request->answer);
+        // $passed_question_id = Answers::find($request->answer);
 
-        CurrentUserQuiz::create([
-            'quiz_id' => $quiz_id,
-            'user_id' => $user_id,
-            'passed_question_id' => $passed_question_id->question_id,
-            'passed_answer_id' => $request->answer
-        ]);
+        // CurrentUserQuiz::create([
+        //     'quiz_id' => $quiz_id,
+        //     'user_id' => $user_id,
+        //     'passed_question_id' => $passed_question_id->question_id,
+        //     'passed_answer_id' => $request->answer
+        // ]);
 
-        return redirect('/biba');
+        // return redirect('/biba');
     }
 }
