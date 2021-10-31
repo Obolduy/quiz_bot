@@ -6,7 +6,7 @@ use App\Models\Answers;
 use App\Models\CorrectAnswers;
 use App\Models\CurrentUserQuiz;
 use App\Models\PassedQuizes;
-use App\Models\Questions;
+use App\Models\Quizes;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redis;
 
@@ -16,7 +16,9 @@ class TestController extends Controller
     {   
         // session(['TESTKEY' => 'TESTVALUE']);
         // echo session('TESTKEY');
-        echo Redis::hmget('1', 'status_id')[0];
+        $nameCheck = Redis::hset('122', 'quiz_question', 'quiz_qusfdsfdf');
+
+        var_dump(Redis::hgetall('122'));
         // $quiz_id = 1;
         // $user_id = 1;
         

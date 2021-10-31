@@ -1,8 +1,6 @@
 <?php
 
-use App\Http\Controllers\CreateQuizController;
-use App\Http\Controllers\TestController;
-use App\Models\Quizes;
+use App\Http\Controllers\{CreateQuizController, ShowQuizController, TestController};
 use Illuminate\Support\Facades\{Route, Redis};
 use TelegramBot\Api\{BotApi, Client};
 
@@ -13,7 +11,10 @@ Route::any('/', function () {
     // 2 - Пользователь открыл выбор квизов
     // 3 - Пользователь проходит квиз
     // 4 - Пользователь прошел квиз, показ результатов
-    // 5 - Пользователь создает квиз
+    // 5 - Пользователь создает квиз (Ввод названия)
+    // 6 - Пользователь создает квиз (Ввод вопросов)
+    // 7 - Пользователь создает квиз (Ввод ответов)
+    // 8 - Пользователь создает квиз (Выбор правильных ответов)
 
     // $telegram = new BotApi('2073248573:AAF9U1RECKhm_uX0XXsFOUfR3tXXWn7_j8o');
     $bot = new Client('2073248573:AAF9U1RECKhm_uX0XXsFOUfR3tXXWn7_j8o');
@@ -26,27 +27,16 @@ Route::any('/', function () {
     });
 
     $bot->command('quiz_list', function ($message) use ($bot) {
-        Redis::hmset($message->getChat()->getId(), 'status_id', '2');
-
-        $quizes = Quizes::all();
-
-        $quiz_list = [];
-
-        foreach ($quizes as $quiz) {
-            $quiz_list[] = $quiz->name;
-        }
-
-        $keyboard = new \TelegramBot\Api\Types\ReplyKeyboardMarkup(
-            [
-                $quiz_list
-            ], true);
-
-        $bot->sendMessage($message->getChat()->getId(),
-            'Выберите викторину', null, false, null, $keyboard);
+        (new ShowQuizController)->showQuizList($message, $bot);
     });
 
-    
-    // $bot->sendMessage($id, 'Your message: ' . $message->getText(), null, false, null, $keyboard);
+    $bot->command('quiz_create', function ($message) use ($bot) {
+        (new CreateQuizController)->createQuizStart($message, $bot);
+    });
+
+    $bot->command('add_questions_stop', function ($message) use ($bot) {
+        (new CreateQuizController)->createQuizAnswers($message, $bot);
+    });
     
     $bot->on(function (\TelegramBot\Api\Types\Update $update) use ($bot) {
         $message = $update->getMessage();
@@ -66,7 +56,10 @@ Route::any('/', function () {
 
                 break;
             case 5:
-                (new CreateQuizController)->createQuiz($update, $bot);
+                (new CreateQuizController)->createQuizName($update, $bot);
+                break;
+            case 6:
+                (new CreateQuizController)->createQuizQuestion($update, $bot);
                 break;
         }
     }, function () {
