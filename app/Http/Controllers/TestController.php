@@ -12,72 +12,39 @@ use Illuminate\Support\Facades\Redis;
 
 class TestController extends Controller
 {
+    public static $id = 12;
+
     public function test(Request $request)
     {   
-        // session(['TESTKEY' => 'TESTVALUE']);
-        // echo session('TESTKEY');
-        $nameCheck = Redis::hset('122', 'quiz_question', 'quiz_qusfdsfdf');
+        if ($request->isMethod('GET')) {
+            return view('welcome');
+        }
 
-        var_dump(Redis::hgetall('122'));
-        // $quiz_id = 1;
-        // $user_id = 1;
-        
-        // if ($request->isMethod('GET')) {
-        //     $questions = Questions::where('quiz_id', $quiz_id)->get();
+        $questions_count = Redis::hgetall(self::$id."_create_quiz");
 
-        //     $question_text = '';
+        $is_done = false;
+        for ($i = 1; $i < count($questions_count); $i++) {
+            $question = Redis::hgetall(self::$id."_create_answers_question_$i");
 
-        //     foreach ($questions as $question) {
-        //         $passed_questions = CurrentUserQuiz::where('user_id', 1)
-        //                             ->where('passed_question_id', $question->id)
-        //                             ->first();
+            $answer_count = count($question);
 
-        //         if (!$passed_questions) {
-        //             $question_text = $question->question;
+            if ($answer_count == 3 && $i == (count($questions_count) - 1)) {
+                $is_done = true;
+            }
 
-        //             $answers = Answers::where('question_id', $question->id)->get();
+            if ($answer_count < 4 || $question["answer_$answer_count"] == 'empty') {
+                $answer_count++;
+                Redis::hset(self::$id."_create_answers_question_$i", "answer_$answer_count", $request->text);
 
-        //             break;
-        //         }
-        //     }
+                break;
+            }
+        }
 
-        //     if ($question_text == '') {
-        //         $score = 0;
+        if ($is_done) {
+            Redis::hmset(self::$id, 'status_id', '8');
+            var_dump('vse');
+        }
 
-        //         $current_user_quiz = CurrentUserQuiz::where('user_id', '=', $user_id)
-        //                             ->where('quiz_id', '=', $quiz_id)->get();
-                
-        //         foreach ($current_user_quiz as $elem) {
-        //             $correct_answers = CorrectAnswers::where('question_id', $elem->passed_question_id)
-        //                                 ->first();
-
-
-        //             if ($correct_answers->answer_id == $elem->passed_answer_id) {
-        //                 $score++;
-        //             }
-        //         }
-
-        //         PassedQuizes::create([
-        //             'passed_quiz_id' => $quiz_id, 
-        //             'user_id' => $user_id,
-        //             'total_score' => $score
-        //         ]);
-                
-        //         echo "Колличество набранных Вами баллов: $score";
-        //     }
-
-        //     return view('welcome', ['question_text' => $question_text, 'answers' => $answers]);
-        // }
-
-        // $passed_question_id = Answers::find($request->answer);
-
-        // CurrentUserQuiz::create([
-        //     'quiz_id' => $quiz_id,
-        //     'user_id' => $user_id,
-        //     'passed_question_id' => $passed_question_id->question_id,
-        //     'passed_answer_id' => $request->answer
-        // ]);
-
-        // return redirect('/biba');
+        var_dump(Redis::hgetall(self::$id."_create_answers_question_4"));
     }
 }
