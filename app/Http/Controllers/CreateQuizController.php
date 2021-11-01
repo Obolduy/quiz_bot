@@ -82,25 +82,26 @@ class CreateQuizController extends Controller
         $id = $message->getChat()->getId();
         $message_text = trim(strip_tags($message->getText()));
 
-        $questions_count = Redis::hgetall($id."_create_quiz");
+        $questions_count = Redis::hgetall($id."_create_quiz"); // получаем все вопросы
 
-        $is_done = false;
-        for ($i = 1; $i < count($questions_count); $i++) {
-            $question = Redis::hgetall($id."_create_answers_question_$i");
+        $is_done = false; // проверка, закончено ли добавление ответов
+        for ($i = 1; $i < count($questions_count); $i++) { // нумерация, начиная с первого вопроса
+            $question = Redis::hgetall($id."_create_answers_question_$i"); // получаем все ответы вопроса
 
             $answer_count = count($question);
 
+            // если это последний ответ последнего вопроса, добавление ответов закончено
             if ($answer_count == 3 && $i == (count($questions_count) - 1)) {
                 $is_done = true;
             }
 
-            if ($question["answer_1"] == 'empty') {
+            if ($question["answer_1"] == 'empty') { // т.к первый ответ всегда 'empty', перезаписываем его
                 Redis::hset($id."_create_answers_question_$i", "answer_1", $message_text);
 
                 break;
             }
 
-            if ($answer_count < 4) {
+            if ($answer_count < 4) { // количество ответов всегда 4
                 $answer_count++;
                 Redis::hset($id."_create_answers_question_$i", "answer_$answer_count", $message_text);
 
@@ -118,26 +119,33 @@ class CreateQuizController extends Controller
             "Ответ принят!"); // над текстом (выводом вопроса) подумай
     }
 
-    // public function createQuizCorrectAnswers($update, $bot)
-    // {
-    //     $message = $update->getMessage();
-    //     $id = $message->getChat()->getId();
-    //     $message_text = trim(strip_tags($message->getText()));
+    public function createQuizCorrectAnswers($update, $bot)
+    {
+        $message = $update->getMessage();
+        $id = $message->getChat()->getId();
+        $message_text = trim(strip_tags($message->getText()));
 
-    //     $answers = Redis::hgetall($id."_create_correct_answers_question");
+        $correct_answers = Redis::hgetall($id."_create_correct_answers_question");
 
-    //     if (Redis::hgetall($id."_create_correct_answers_question")) {
-    //         Redis::hset($id."_create_correct_answers_question", "question_1", $message_text);
-    //     } else {
-    //         $questions = Redis::hgetall($id."_create_quiz");
+        $questions = Redis::hgetall($id."_create_quiz");
 
-    //         $count = 1;
-    //         foreach ($questions as $key => $value) {
-    //             if ($key != 'quiz_name') {
-    //                 $answers[$count] = Redis::hgetall($id."_create_answers_question_$count");
-    //                 $count++;
-    //             }
-    //         }
-    //     }
-    // }
+        $count = 1;
+        foreach ($questions as $key => $value) {
+            if ($key != 'quiz_name') {
+                $answers[$count] = Redis::hgetall($id."_create_answers_question_$count");
+                $count++;
+            }
+        }
+
+        foreach ($answers as $number => $answer) {
+            if ((count($correct_answers) + 1) == $number) {
+                foreach ($answer as $key => $variable) {
+                    $variables = "$variable \n";
+                }
+
+                $bot->sendMessage($id, $variables); // над выводом ответов подумай 
+                Redis::hset($id."_create_correct_answers_question", "answer_$number", $message_text);
+            }
+        }
+    }
 }
