@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Answers;
+use App\Models\CorrectAnswers;
 use App\Models\Questions;
 use App\Models\Quizes;
 use Illuminate\Support\Facades\{Redis, DB};
@@ -34,7 +35,7 @@ class CreateQuizController extends Controller
         }
     }
 
-    public function createQuizQuestion($update, $bot)
+    public function createQuizQuestions($update, $bot)
     {
         $message = $update->getMessage();
         $id = $message->getChat()->getId();
@@ -69,7 +70,7 @@ class CreateQuizController extends Controller
             }
         }
 
-        $bot->sendMessage($message->getChat()->getId(),
+        $bot->sendMessage($id,
             "Мы закончили с вопросами! Теперь пора придумывать ответы на них. 
             Введите ответ и отправьте его, после 4-го варианта Вы будете автоматически переведены 
             на следующий вопрос. Правильные ответы Вы сможете пометить чуть позже.
@@ -89,6 +90,9 @@ class CreateQuizController extends Controller
             $question = Redis::hgetall($id."_create_answers_question_$i"); // получаем все ответы вопроса
 
             $answer_count = count($question);
+
+            $question_text_number = ($answer_count !== 3) ? $i : $i + 1;
+            $question_text = Redis::hget($id."_create_quiz", "question_$question_text_number"); // получаем текст вопроса
 
             // если это последний ответ последнего вопроса, добавление ответов закончено
             if ($answer_count == 3 && $i == (count($questions_count) - 1)) {
@@ -111,19 +115,19 @@ class CreateQuizController extends Controller
 
         if ($is_done) {
             Redis::hmset($id, 'status_id', '8');
-            $bot->sendMessage($message->getChat()->getId(),
+            $bot->sendMessage($id,
                 "Мы закончили с ответами! Самое время выбрать правильные ответы!
                     Сейчас Вам по порядку будут отправлены ответы на вопросы, Ваша задача - отметить правильный.
                         Сделать это нужно, отправив цифру, соответствующую варианту ответа.
-                            Напишите 'Готов', чтобы начать!"); // аналогично ниже
+                            Напишите 'Готов', чтобы начать!");
+        } else {
+            $bot->sendMessage($id, "Ответ принят! Вопрос: \"$question_text\"");
         }
-
-        $bot->sendMessage($message->getChat()->getId(),
-            "Ответ принят!"); // над текстом (выводом вопроса) подумай
     }
 
-    public function createQuizCorrectAnswers($message, $bot)
+    public function createQuizCorrectAnswers($update, $bot)
     {
+        $message = $update->getMessage();
         $id = $message->getChat()->getId();
         $message_text = trim(strip_tags($message->getText()));
 
@@ -146,19 +150,27 @@ class CreateQuizController extends Controller
             вопросов, потому прибавляем к этому числу единицу, дабы записать в новый элемент новый ответ */
             if ((count($correct_answers) + 1) == $number) {
                 for ($i = 1; $i <= count($answer); $i++) {
-                    $variables .= "$i. ". $answer["answer_$i"]."\n"; // записываем вопросы как номер. вопрос
+                    $variables .= "$i. ". $answer["answer_$i"]."\n"; // записываем ответы как номер. ответ
                 }
 
-                $bot->sendMessage($id, $variables); // над выводом ответов подумай
+                // if (!Redis::hget($id."_create_correct_answers_question", "question_$number")) {
+                //     $bot->sendMessage($id, $variables);
+                // }
 
-                if ($message_text !== strtolower('готов') && !in_array($message_text, range(1, 4))) {
+                $bot->sendMessage($id, $variables);
+
+                if (in_array((int)$message_text, range(1, 4))) {
                     Redis::hset($id."_create_correct_answers_question", "question_$number", $message_text);
                 }
             }
         }
 
         if (count($correct_answers) == count($answers)) {
-            $bot->sendMessage($id, "Поздравляем! Ваша викторина успешно создана"); // Добавляем в базу все и даем ссылку на викторину
+            $this->createQuizDone($id);
+            Redis::hmset($id, 'status_id', '1');
+
+            $bot->sendMessage($id, "Поздравляем! Ваша викторина успешно создана,
+                Вы можете посмотреть все созданные викторины с помощью команды /my_quizes");
         }
     }
 
@@ -171,11 +183,45 @@ class CreateQuizController extends Controller
             ]);
 
             for ($i = 1; $i < count(Redis::hgetall($id."_create_quiz")); $i++) {
-                $questions[] = Questions::create([
+                $question = Questions::create([
                     'quiz_id' => $quiz->id,
                     'question' => Redis::hget($id."_create_quiz", "question_$i")
                 ]);
+
+                $answers_list[$question->id] = Redis::hgetall($id."_create_answers_question_$i");
+            }
+            
+            foreach ($answers_list as $question_id => $answers) {
+                foreach ($answers as $answer) {
+                    $all_answers[] = Answers::create([
+                        'question_id' => $question_id,
+                        'answer' => $answer
+                    ]);
+                }
+            }
+
+            for ($i = 1; $i <= count(Redis::hgetall($id."_create_correct_answers_question")); $i++) {
+                $correct_answer = Redis::hget($id."_create_correct_answers_question", "question_$i");
+                $correct_answers_array[] = Redis::hget($id."_create_answers_question_$i", $correct_answer);
+            }
+
+            foreach ($correct_answers_array as $elem) {
+                foreach ($all_answers as $answers_text) {
+                    if ($answers_text->answer == $elem) {
+                        CorrectAnswers::create([
+                            'question_id' => $answers_text->question_id,
+                            'answer_id' => $answers_text->id
+                        ]);
+                    }
+                }
             }
         });
+
+        for ($i = 1; $i < count(Redis::hgetall($id."_create_quiz")); $i++) {
+            Redis::del($id."_create_answers_question_$i");
+        }
+
+        Redis::del($id."_create_quiz");
+        Redis::del($id."_create_correct_answers_question");
     }
 }
