@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Answers;
 use App\Models\Questions;
 use App\Models\Quizes;
-use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Facades\{Redis, DB};
 
 class CreateQuizController extends Controller
 {
@@ -112,40 +112,70 @@ class CreateQuizController extends Controller
         if ($is_done) {
             Redis::hmset($id, 'status_id', '8');
             $bot->sendMessage($message->getChat()->getId(),
-                "Мы закончили с ответами! Самое время выбрать правильные ответы!"); // аналогично ниже
+                "Мы закончили с ответами! Самое время выбрать правильные ответы!
+                    Сейчас Вам по порядку будут отправлены ответы на вопросы, Ваша задача - отметить правильный.
+                        Сделать это нужно, отправив цифру, соответствующую варианту ответа.
+                            Напишите 'Готов', чтобы начать!"); // аналогично ниже
         }
 
         $bot->sendMessage($message->getChat()->getId(),
             "Ответ принят!"); // над текстом (выводом вопроса) подумай
     }
 
-    public function createQuizCorrectAnswers($update, $bot)
+    public function createQuizCorrectAnswers($message, $bot)
     {
-        $message = $update->getMessage();
         $id = $message->getChat()->getId();
         $message_text = trim(strip_tags($message->getText()));
 
-        $correct_answers = Redis::hgetall($id."_create_correct_answers_question");
+        $correct_answers = Redis::hgetall($id."_create_correct_answers_question"); // получаем правильные ответы, если они записаны
 
-        $questions = Redis::hgetall($id."_create_quiz");
+        $questions = Redis::hgetall($id."_create_quiz"); // получаем вопросы
 
-        $count = 1;
+        $count = 1; // нумерация с единицы, т.к. нулевой элемент в массиве - название квиза
         foreach ($questions as $key => $value) {
             if ($key != 'quiz_name') {
+                // пишем в массив ответы ко всем вопросам и их порядковые номера, как номер ответа=>ответ
                 $answers[$count] = Redis::hgetall($id."_create_answers_question_$count");
                 $count++;
             }
         }
 
+        $variables = '';
         foreach ($answers as $number => $answer) {
+            /* количество элементов массива правильных ответов равняется числу уже "пройденных" циклом
+            вопросов, потому прибавляем к этому числу единицу, дабы записать в новый элемент новый ответ */
             if ((count($correct_answers) + 1) == $number) {
-                foreach ($answer as $key => $variable) {
-                    $variables = "$variable \n";
+                for ($i = 1; $i <= count($answer); $i++) {
+                    $variables .= "$i. ". $answer["answer_$i"]."\n"; // записываем вопросы как номер. вопрос
                 }
 
-                $bot->sendMessage($id, $variables); // над выводом ответов подумай 
-                Redis::hset($id."_create_correct_answers_question", "answer_$number", $message_text);
+                $bot->sendMessage($id, $variables); // над выводом ответов подумай
+
+                if ($message_text !== strtolower('готов') && !in_array($message_text, range(1, 4))) {
+                    Redis::hset($id."_create_correct_answers_question", "question_$number", $message_text);
+                }
             }
         }
+
+        if (count($correct_answers) == count($answers)) {
+            $bot->sendMessage($id, "Поздравляем! Ваша викторина успешно создана"); // Добавляем в базу все и даем ссылку на викторину
+        }
+    }
+
+    public function createQuizDone($id)
+    {
+        DB::transaction(function () use ($id) {
+            $quiz = Quizes::create([
+                'name' => Redis::hget($id."_create_quiz", 'quiz_name'),
+                'creator_id' => $id
+            ]);
+
+            for ($i = 1; $i < count(Redis::hgetall($id."_create_quiz")); $i++) {
+                $questions[] = Questions::create([
+                    'quiz_id' => $quiz->id,
+                    'question' => Redis::hget($id."_create_quiz", "question_$i")
+                ]);
+            }
+        });
     }
 }

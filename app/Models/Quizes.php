@@ -11,7 +11,8 @@ class Quizes extends Model
 
     protected $fillable = [
         'quiz_id',
-        'name'
+        'name',
+        'creator_id'
     ];
 
     public $timestamps = false;
