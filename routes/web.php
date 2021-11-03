@@ -1,10 +1,13 @@
 <?php
 
 use App\Http\Controllers\{
-    CreateQuizController, ShowQuizController, TestController, ShowUserQuizesController
+    CreateQuizController, ShowQuizController, TestController, ShowUserQuizesController,
+    CreateQuizAnswersController, CreateQuizCorrectAnswersController, CreateQuizNameController,
+    CreateQuizQuestionsController
 };
 use Illuminate\Support\Facades\{Route, Redis};
 use TelegramBot\Api\{BotApi, Client};
+use TelegramBot\Api\Types\Update;
 
 Route::any('/biba', [TestController::class, 'test']);
 
@@ -37,14 +40,14 @@ Route::any('/', function () {
     });
 
     $bot->command('add_questions_stop', function ($message) use ($bot) {
-        (new CreateQuizController)->createQuizAnswerStart($message, $bot);
+        (new CreateQuizAnswersController)->createQuizAnswerStart($message, $bot);
     });
 
     $bot->command('my_quizes', function ($message) use ($bot) {
         (new ShowUserQuizesController)->showQuizes($message, $bot);
     });
     
-    $bot->on(function (\TelegramBot\Api\Types\Update $update) use ($bot) {
+    $bot->on(function (Update $update) use ($bot) {
         $message = $update->getMessage();
         $id = $message->getChat()->getId();
 
@@ -62,16 +65,16 @@ Route::any('/', function () {
 
                 break;
             case 5:
-                (new CreateQuizController)->createQuizName($update, $bot);
+                (new CreateQuizNameController)->createQuizName($update, $bot);
                 break;
             case 6:
-                (new CreateQuizController)->createQuizQuestions($update, $bot);
+                (new CreateQuizQuestionsController)->createQuizQuestions($update, $bot);
                 break;
             case 7:
-                (new CreateQuizController)->createQuizAnswers($update, $bot);
+                (new CreateQuizAnswersController)->createQuizAnswers($update, $bot);
                 break;
             case 8:
-                (new CreateQuizController)->createQuizCorrectAnswers($update, $bot);
+                (new CreateQuizCorrectAnswersController)->createQuizCorrectAnswers($update, $bot);
                 break;
         }
     }, function () {
