@@ -144,7 +144,9 @@ class CreateQuizController extends Controller
             for ($i = 0; $i <= count($message_array); $i++) {
                 $number = $i + 1;
                 if ($number <= count($message_array)) {
-                    Redis::hset($id."_create_correct_answers_question", "question_$number", $message_array[$i]);
+                    $question_name = Redis::hget($id."_create_quiz", "question_$number");
+                    $question_answer = Redis::hget($id."_create_answers_question_$number", "answer_{$message_array[$i]}");
+                    Redis::hset($id."_create_correct_answers_question", $question_name, $question_answer);
                 }
             }
 
@@ -180,6 +182,7 @@ class CreateQuizController extends Controller
                     'question' => Redis::hget($id."_create_quiz", "question_$i")
                 ]);
 
+                $questions[$i] = $question;
                 $answers_list[$question->id] = Redis::hgetall($id."_create_answers_question_$i");
             }
             
@@ -192,18 +195,17 @@ class CreateQuizController extends Controller
                 }
             }
 
-            for ($i = 1; $i <= count(Redis::hgetall($id."_create_correct_answers_question")); $i++) {
-                $correct_answer = Redis::hget($id."_create_correct_answers_question", "question_$i");
-                $correct_answers_array[] = Redis::hget($id."_create_answers_question_$i", $correct_answer);
-            }
-
-            foreach ($correct_answers_array as $elem) {
-                foreach ($all_answers as $answers_text) {
-                    if ($answers_text->answer == $elem) {
-                        CorrectAnswers::create([
-                            'question_id' => $answers_text->question_id,
-                            'answer_id' => $answers_text->id
-                        ]);
+            foreach ($questions as $question) {
+                foreach ($all_answers as $answer) {
+                    if ($answer->question_id == $question->id) {
+                        foreach (Redis::hgetall($id."_create_correct_answers_question") as $key => $value) {
+                            if ($question->question == $key && $answer->answer == $value) {
+                                CorrectAnswers::create([
+                                    'question_id' => $answer->question_id,
+                                    'answer_id' => $answer->id
+                                ]);
+                            }
+                        }
                     }
                 }
             }

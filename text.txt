@@ -1,0 +1,11 @@
+GET /biba HTTP/1.1
+Accept:                    text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8
+Accept-Encoding:           gzip, deflate
+Accept-Language:           ru-RU,ru;q=0.8,en-US;q=0.5,en;q=0.3
+Connection:                keep-alive
+Cookie:                    XSRF-TOKEN=eyJpdiI6ImNFd2dST2owb2JuMnlhbW5scHRPN1E9PSIsInZhbHVlIjoiYTJtZzBpb0JPd21VYUROdnpXWVZXd0hLQ0tFaTFnZTY4aWw5NkxXNmpFcTI0aWdGTzZ0R2ppekt2UFdKNGhCdUlPakNYNzJIMitmcnRXSTJiNEIrS3IvQThFRFFxSEhPZ1JGb0p3L2xac1JBaHQvUEwrWmVWQndEdEpkTmc2ekwiLCJtYWMiOiJlZTc2ZDJkNTdlNTdhMTM2MTE1Mjk0NGYyOWU3ZGI3ZGRhZTJjNzIzYmQ0MWYzYzliNmVlYWMzZGZiMzE1NGYyIiwidGFnIjoiIn0%3D; laravel_session=eyJpdiI6InBWMDhlUy8reWxjS3MxWENHcTJBQ2c9PSIsInZhbHVlIjoiSWViRjZ6OE1FSW9vKy9uTG5XcnZuOFU3L2ZQaVBLd1RaK0x2SkFtL0dQSDREa0lDMGpacEhQeWJLbjVjTE84OXVoK01EaldKbG5uL2ZObmxKajg1WHhXQUJaWUlzS2lhNFV0T0M5VDJHTkhSNWliMFhFRVNRaERpVHF4QU53NlYiLCJtYWMiOiJjZDgyOWJhMTE1NDg3YmM4NzlhNGVmOTFkOTFhZWI3MDJiOWQ1ZTE4Zjg1OGMyYjkwOTQzZmI1YzhhMjExZWYxIiwidGFnIjoiIn0%3D
+Host:                      test_bot.local
+Upgrade-Insecure-Requests: 1
+User-Agent:                Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:93.0) Gecko/20100101 Firefox/93.0
+Cookie: XSRF-TOKEN=3F11kR2qFOtIivXL9sMlvBRHJ5sUesuMm4Z5jdGq; laravel_session=CSrCLlBSXYdVcNs1Cb7oi3RnFF0OlHRhlYnPa2yC
+

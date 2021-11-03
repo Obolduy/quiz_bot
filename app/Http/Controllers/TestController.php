@@ -18,40 +18,47 @@ class TestController extends Controller
     public function test(Request $request)
     {   
         $id = 810293946;
-        $message_text = 'Готов';
 
-        $questions = Redis::hgetall($id."_create_quiz"); // получаем вопросы
+        // var_dump(Redis::hgetall($id."_create_correct_answers_question")); die();
+        DB::transaction(function () use ($id) {
+            $quiz = Quizes::create([
+                'name' => Redis::hget($id."_create_quiz", 'quiz_name'),
+                'creator_id' => $id
+            ]);
 
-            for ($i = 1; $i < count($questions); $i++) {
-                // пишем в массив ответы ко всем вопросам и их порядковые номера, как номер ответа=>ответ
-                $answers[$i] = Redis::hgetall($id."_create_answers_question_$i");
+            for ($i = 1; $i < count(Redis::hgetall($id."_create_quiz")); $i++) {
+                $question = Questions::create([
+                    'quiz_id' => $quiz->id,
+                    'question' => Redis::hget($id."_create_quiz", "question_$i")
+                ]);
+
+                $questions[$i] = $question;
+                $answers_list[$question->id] = Redis::hgetall($id."_create_answers_question_$i");
             }
-
-        $message_check = (int)$message_text;
-        var_dump($message_check);
-        var_dump(is_int((int)$message_text));
-        $message_array = str_split(str_replace([' ', ',', '.'], '', $message_text));
-
-        if (count($answers) == count($message_array)) {
-            for ($i = 0; $i <= count($message_array); $i++) {
-                $number = $i + 1;
-                if ($number <= count($message_array)) {
-                    Redis::hset($id."_create_correct_answers_question", "question_$number", $message_array[$i]);
+            
+            foreach ($answers_list as $question_id => $answers) {
+                foreach ($answers as $answer) {
+                    $all_answers[] = Answers::create([
+                        'question_id' => $question_id,
+                        'answer' => $answer
+                    ]);
                 }
             }
 
-            var_dump(Redis::hgetall($id."_create_correct_answers_question"));
-        } else {
-            $variables = '';
-
-            foreach ($answers as $number => $answer) {
-                $variables .= $questions["question_$number"] . "\n";
-                for ($i = 1; $i <= count($answer); $i++) {
-                    $variables .= "$i. ". $answer["answer_$i"]."\n"; // записываем ответы как номер. ответ
+            foreach ($questions as $question) {
+                foreach ($all_answers as $answer) {
+                    if ($answer->question_id == $question->id) {
+                        foreach (Redis::hgetall($id."_create_correct_answers_question") as $key => $value) {
+                            if ($question->question == $key && $answer->answer == $value) {
+                                CorrectAnswers::create([
+                                    'question_id' => $answer->question_id,
+                                    'answer_id' => $answer->id
+                                ]);
+                            }
+                        }
+                    }
                 }
             }
-
-            echo $variables;
-        }
+        });
     }    
 }
