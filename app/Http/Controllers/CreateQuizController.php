@@ -118,7 +118,7 @@ class CreateQuizController extends Controller
             $bot->sendMessage($id,
                 "Мы закончили с ответами! Самое время выбрать правильные ответы!
                     Сейчас Вам по порядку будут отправлены ответы на вопросы, Ваша задача - отметить правильный.
-                        Сделать это нужно, отправив цифру, соответствующую варианту ответа.
+                        Пожалуйста, напишите номера правильных вариантов ответа одним сообщением.
                             Напишите 'Готов', чтобы начать!");
         } else {
             $bot->sendMessage($id, "Ответ принят! Вопрос: \"$question_text\"");
@@ -131,46 +131,38 @@ class CreateQuizController extends Controller
         $id = $message->getChat()->getId();
         $message_text = trim(strip_tags($message->getText()));
 
-        $correct_answers = Redis::hgetall($id."_create_correct_answers_question"); // получаем правильные ответы, если они записаны
-
         $questions = Redis::hgetall($id."_create_quiz"); // получаем вопросы
 
-        $count = 1; // нумерация с единицы, т.к. нулевой элемент в массиве - название квиза
-        foreach ($questions as $key => $value) {
-            if ($key != 'quiz_name') {
-                // пишем в массив ответы ко всем вопросам и их порядковые номера, как номер ответа=>ответ
-                $answers[$count] = Redis::hgetall($id."_create_answers_question_$count");
-                $count++;
-            }
+        for ($i = 1; $i < count($questions); $i++) {
+            // пишем в массив ответы ко всем вопросам и их порядковые номера, как номер ответа=>ответ
+            $answers[$i] = Redis::hgetall($id."_create_answers_question_$i");
         }
 
-        $variables = '';
-        foreach ($answers as $number => $answer) {
-            /* количество элементов массива правильных ответов равняется числу уже "пройденных" циклом
-            вопросов, потому прибавляем к этому числу единицу, дабы записать в новый элемент новый ответ */
-            if ((count($correct_answers) + 1) == $number) {
-                for ($i = 1; $i <= count($answer); $i++) {
-                    $variables .= "$i. ". $answer["answer_$i"]."\n"; // записываем ответы как номер. ответ
-                }
+        $message_array = str_split(str_replace([' ', ',', '.'], '', (int)$message_text));
 
-                // if (!Redis::hget($id."_create_correct_answers_question", "question_$number")) {
-                //     $bot->sendMessage($id, $variables);
-                // }
-
-                $bot->sendMessage($id, $variables);
-
-                if (in_array((int)$message_text, range(1, 4))) {
-                    Redis::hset($id."_create_correct_answers_question", "question_$number", $message_text);
+        if (count($answers) == count($message_array)) {
+            for ($i = 0; $i <= count($message_array); $i++) {
+                $number = $i + 1;
+                if ($number <= count($message_array)) {
+                    Redis::hset($id."_create_correct_answers_question", "question_$number", $message_array[$i]);
                 }
             }
-        }
 
-        if (count($correct_answers) == count($answers)) {
             $this->createQuizDone($id);
             Redis::hmset($id, 'status_id', '1');
 
             $bot->sendMessage($id, "Поздравляем! Ваша викторина успешно создана,
                 Вы можете посмотреть все созданные викторины с помощью команды /my_quizes");
+        } else {
+            $variables = '';
+
+            foreach ($answers as $number => $answer) {
+                $variables .= $questions["question_$number"] . "\n";
+                for ($i = 1; $i <= count($answer); $i++) {
+                    $variables .= "$i. ". $answer["answer_$i"]."\n"; // записываем ответы как номер. ответ
+                }
+            }
+            $bot->sendMessage($id, $variables);
         }
     }
 
