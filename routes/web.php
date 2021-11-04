@@ -3,7 +3,7 @@
 use App\Http\Controllers\{
     CreateQuizController, ShowQuizController, TestController, ShowUserQuizesController,
     CreateQuizAnswersController, CreateQuizCorrectAnswersController, CreateQuizNameController,
-    CreateQuizQuestionsController
+    CreateQuizQuestionsController, ShowQuizListController
 };
 use Illuminate\Support\Facades\{Route, Redis};
 use TelegramBot\Api\{BotApi, Client};
@@ -32,7 +32,7 @@ Route::any('/', function () {
     });
 
     $bot->command('quiz_list', function ($message) use ($bot) {
-        (new ShowQuizController)->showQuizList($message, $bot);
+        (new ShowQuizListController)->showQuizes($message, $bot);
     });
 
     $bot->command('quiz_create', function ($message) use ($bot) {
@@ -44,7 +44,7 @@ Route::any('/', function () {
     });
 
     $bot->command('my_quizes', function ($message) use ($bot) {
-        (new ShowUserQuizesController)->showQuizes($message, $bot);
+        (new ShowUserQuizesController)->showUserQuizes($message, $bot);
     });
     
     $bot->on(function (Update $update) use ($bot) {
@@ -56,7 +56,7 @@ Route::any('/', function () {
 
                 break;
             case 2:
-
+                (new ShowQuizController)->selectQuizByName($update, $bot);
                 break;
             case 3:
 

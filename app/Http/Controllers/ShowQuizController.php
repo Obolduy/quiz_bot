@@ -4,28 +4,23 @@ namespace App\Http\Controllers;
 
 use App\Models\Quizes;
 use Illuminate\Support\Facades\Redis;
-use TelegramBot\Api\Types\ReplyKeyboardMarkup;
 
 class ShowQuizController extends Controller
 {
-    public function showQuizList($message, $bot)
+    public function selectQuizByName($update, $bot)
     {
-        Redis::hmset($message->getChat()->getId(), 'status_id', '2');
+        $message = $update->getMessage();
+        $id = $message->getChat()->getId();
+        $message_text = trim(strip_tags($message->getText()));
 
-        $quizes = Quizes::all();
+        $quiz = Quizes::where('name', $message_text)->first();
 
-        $quiz_list = [];
+        if ($quiz) {
+            Redis::hmset($id, 'status_id', '3');
 
-        foreach ($quizes as $quiz) {
-            $quiz_list[] = $quiz->name;
+            $bot->sendMessage($id, 'Да, все ок вот название викторины: '. $quiz->name);
+        } else {
+            $bot->sendMessage($id, 'Название викторины неверно!');
         }
-
-        $keyboard = new ReplyKeyboardMarkup(
-            [
-                $quiz_list
-            ], true);
-
-        $bot->sendMessage($message->getChat()->getId(),
-            'Выберите викторину', null, false, null, $keyboard);
     }
 }
