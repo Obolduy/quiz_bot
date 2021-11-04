@@ -62,7 +62,7 @@ Route::any('/', function () {
                 (new ShowQuizController)->quiz($update, $bot);
                 break;
             case 4:
-
+                
                 break;
             case 5:
                 (new CreateQuizNameController)->createQuizName($update, $bot);

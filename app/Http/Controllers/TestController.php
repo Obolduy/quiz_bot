@@ -71,7 +71,11 @@ class TestController extends Controller
                 echo "Колличество набранных Вами баллов: $score";
             }
 
-            return view('welcome', ['question_text' => $question_text, 'answers' => $answers]);
+            foreach ($answers as $answer) {
+                $answer_list[] = ['text' => $answer->answer];
+            }
+            var_dump($answer_list); die(); 
+            // return view('welcome', ['question_text' => $question_text, 'answers' => $answers]);
         }
 
         $current_user_quiz = CurrentUserQuiz::where('user_id', $user_id)->orderByDesc('id')->first();

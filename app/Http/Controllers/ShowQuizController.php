@@ -46,7 +46,11 @@ class ShowQuizController extends Controller
         $quiz_id = Redis::hget($id, 'quiz_id');
 
         if (mb_strtolower($message_text, 'UTF-8') !== 'начать' && CurrentUserQuiz::where('user_id', $id)->first()) {
-            $this->saveAnswer($id, $message_text);
+            if (Answers::where('answer', $message_text)->first()) {
+                $this->saveAnswer($id, $message_text);
+            } else {
+                $bot->sendMessage($id, 'Введите, пожалуйста, корректный ответ'); die();
+            }
         } 
         
         $questions = Questions::where('quiz_id', $quiz_id)->get();
