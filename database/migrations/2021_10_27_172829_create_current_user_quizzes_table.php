@@ -17,7 +17,7 @@ class CreateCurrentUserQuizTable extends Migration
             $table->id();
             $table->integer('quiz_id');
             $table->integer('passed_question_id');
-            $table->integer('passed_answer_id');
+            $table->integer('passed_answer_id')->nullable();
             $table->integer('user_id');
         });
     }
