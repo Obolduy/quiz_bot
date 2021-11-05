@@ -15,7 +15,7 @@ Route::any('/', function () {
     // 1 - Пользователь ввел '/start'
     // 2 - Пользователь открыл выбор квизов
     // 3 - Пользователь проходит квиз
-    // 4 - Пользователь прошел квиз, показ результатов
+    // 4 - Пользователь прошел квиз, показ результатов, оценка
     // 5 - Пользователь создает квиз (Ввод названия)
     // 6 - Пользователь создает квиз (Ввод вопросов)
     // 7 - Пользователь создает квиз (Ввод ответов)
@@ -62,7 +62,7 @@ Route::any('/', function () {
                 (new ShowQuizController)->quiz($update, $bot);
                 break;
             case 4:
-                
+                (new ShowQuizController)->quizVote($update, $bot);
                 break;
             case 5:
                 (new CreateQuizNameController)->createQuizName($update, $bot);

@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\{Quizes, Questions, Answers, PassedQuizes, CurrentUserQuiz, CorrectAnswers};
+use App\Models\{Quizes, Questions, Answers, PassedQuizes, CurrentUserQuiz, CorrectAnswers, QuizStars};
 use Illuminate\Support\Facades\Redis;
 use TelegramBot\Api\Types\ReplyKeyboardMarkup;
+
 
 class ShowQuizController extends Controller
 {
@@ -116,12 +117,41 @@ class ShowQuizController extends Controller
             }
 
             Redis::hmset($id, "status_id", 4);
-            Redis::hmset($id, "quiz_id", 0);
 
-            $bot->sendMessage($id, "Колличество набранных Вами баллов: $score");
+            $keyboard = new ReplyKeyboardMarkup(
+                [
+                    ["1", "2", "3", "4", "5"]
+                ], true, true
+            );
+
+            $bot->sendMessage($id, "Колличество набранных Вами баллов: $score. \n
+                Пожалуйста, оцените викторину;)", null, false, null, $keyboard);
         } else {
             $bot->sendMessage($id, $question_text);
             $bot->sendMessage($id, 'Выберите правильный ответ', null, false, null, $keyboard);
         }
-    }  
+    }
+
+    public function quizVote($update, $bot)
+    {
+        $message = $update->getMessage();
+        $id = $message->getChat()->getId();
+        $message_text = trim(strip_tags($message->getText()));
+
+        $quizStars = QuizStars::where('quiz_id', Redis::hget($id, 'quiz_id'))->first();
+
+        if (in_array((int)$message_text, range(1,5))) { // является ли текст числом от 1 до 5
+            $quizStars->votes_count++;
+            $quizStars->stars_count += $message_text;
+            $quizStars->stars_avg = $quizStars->stars_count / $quizStars->votes_count; // среднее арифметическое
+            $quizStars->save();
+
+            $bot->sendMessage($id, 'Спасибо, Ваш голос учтен!');
+        }
+
+        $bot->sendMessage($id, 'Чтобы посмотреть Ваши результаты по всем викторинам, напишите /results, для просмотра викторин - /quiz_list, а для создания - /quiz_create');
+
+        Redis::hmset($id, "quiz_id", 0);
+        Redis::hmset($id, "status_id", 4);
+    }
 }

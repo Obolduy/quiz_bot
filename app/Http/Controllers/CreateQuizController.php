@@ -6,6 +6,7 @@ use App\Models\Answers;
 use App\Models\CorrectAnswers;
 use App\Models\Questions;
 use App\Models\Quizes;
+use App\Models\QuizStars;
 use Illuminate\Support\Facades\{Redis, DB};
 
 class CreateQuizController extends Controller
@@ -25,6 +26,10 @@ class CreateQuizController extends Controller
             $quiz = Quizes::create([
                 'name' => Redis::hget($id."_create_quiz", 'quiz_name'),
                 'creator_id' => $id
+            ]);
+
+            QuizStars::create([
+                'quiz_id' => $quiz->id, 
             ]);
 
             for ($i = 1; $i < count(Redis::hgetall($id."_create_quiz")); $i++) {
