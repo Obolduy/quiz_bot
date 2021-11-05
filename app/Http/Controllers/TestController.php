@@ -22,13 +22,15 @@ class TestController extends Controller
 
         $pageFrom = ($page * 5) - 5;
         $pageTo = 5;
-        // $quizes = DB::table('quizes')->select('* limit ?, ?', [$pageFrom, $pageTo])->get();
-        $quizes = DB::raw("select * from quizes limit $pageFrom, $pageTo");
-        $quizes = DB::table('quizes')
+        $quizes = Quizes::select('quizes.*', 'quiz_stars.stars_avg')
                 ->offset($pageFrom)
+                ->leftJoin('quiz_stars', 'quizes.id', '=', 'quiz_stars.quiz_id')
+                ->orderBy('quiz_stars.stars_avg', 'desc')
                 ->limit($pageTo)
                 ->get();
 
-        var_dump($quizes);
+        foreach ($quizes as $quiz) {
+            echo $quiz->name . "Оценка: {$quiz->stars_avg} звезд . <br>";
+        }
     }  
 }

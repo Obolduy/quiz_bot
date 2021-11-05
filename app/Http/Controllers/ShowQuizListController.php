@@ -14,22 +14,14 @@ class ShowQuizListController extends Controller
 
         $page = Redis::hget($message->getChat()->getId(), 'page') ?? 1;
 
-        $pageFrom = ($page * 5) - 5; // вывод по 5 квизов
-        $pageTo = 5;
-        $quizes = Quizes::offset($pageFrom)
-                ->limit($pageTo)
-                ->get();
-
-        if (!$quizes) {
-            $quizes = Quizes::offset($page)
-                    ->limit($pageTo)
-                    ->get();
-        }
+        $quizes = $this->paginateQuiz($page);
 
         $quiz_list = [];
+        $quiz_message = '';
 
         foreach ($quizes as $quiz) {
             $quiz_list[] = $quiz->name;
+            $quiz_message .= "Название викторины: {$quiz->name} \n Средняя оценка: {$quiz->stars_avg} \n";
         }
 
         if ((int)$page !== 1) {
@@ -45,7 +37,33 @@ class ShowQuizListController extends Controller
                 $quiz_list
             ], true);
 
+        
+        $bot->sendMessage($message->getChat()->getId(), $quiz_message);
+
         $bot->sendMessage($message->getChat()->getId(),
-        "Выберите викторину", null, false, null, $keyboard);
+            "Выберите викторину", null, false, null, $keyboard);
+    }
+
+    private function paginateQuiz($page)
+    {
+        $pageFrom = ($page * 5) - 5; // вывод по 5 квизов
+        $pageTo = 5;
+        $quizes = Quizes::select('quizes.*', 'quiz_stars.stars_avg')
+                ->offset($pageFrom)
+                ->leftJoin('quiz_stars', 'quizes.id', '=', 'quiz_stars.quiz_id')
+                ->orderBy('quiz_stars.stars_avg', 'desc')
+                ->limit($pageTo)
+                ->get();
+
+        if (!$quizes) {
+            $quizes = Quizes::select('quizes.*', 'quiz_stars.stars_avg')
+                    ->offset($page)
+                    ->leftJoin('quiz_stars', 'quizes.id', '=', 'quiz_stars.quiz_id')
+                    ->orderBy('quiz_stars.stars_avg', 'desc')
+                    ->limit($pageTo)
+                    ->get();
+        }
+
+        return $quizes; // сортировка по средней оценке
     }
 }
