@@ -20,6 +20,7 @@ Route::any('/', function () {
     // 6 - Пользователь создает квиз (Ввод вопросов)
     // 7 - Пользователь создает квиз (Ввод ответов)
     // 8 - Пользователь создает квиз (Выбор правильных ответов)
+    // 9 - Пользователь открыл выбор квизов и отсортировал их по дате
 
     // $telegram = new BotApi('2073248573:AAF9U1RECKhm_uX0XXsFOUfR3tXXWn7_j8o');
     $bot = new Client('2073248573:AAF9U1RECKhm_uX0XXsFOUfR3tXXWn7_j8o');
@@ -32,6 +33,11 @@ Route::any('/', function () {
     });
 
     $bot->command('quiz_list', function ($message) use ($bot) {
+        (new ShowQuizListController)->showQuizes($message, $bot);
+    });
+
+    $bot->command('sort_date', function ($message) use ($bot) {
+        Redis::hmset($message->getChat()->getId(), 'status_id', '9');
         (new ShowQuizListController)->showQuizes($message, $bot);
     });
 
@@ -55,7 +61,7 @@ Route::any('/', function () {
             case 1:
 
                 break;
-            case 2:
+            case 2 && 9:
                 (new ShowQuizController)->selectQuizByName($update, $bot);
                 break;
             case 3:

@@ -10,18 +10,28 @@ class ShowQuizListController extends Controller
 {
     public function showQuizes($message, $bot)
     {
-        Redis::hmset($message->getChat()->getId(), 'status_id', '2');
+        if (Redis::hget($message->getChat()->getId(), 'status_id') != '9') {
+            Redis::hmset($message->getChat()->getId(), 'status_id', '2');
+        }
 
         $page = Redis::hget($message->getChat()->getId(), 'page') ?? 1;
 
-        $quizes = $this->paginateQuiz($page);
+        if ($page === 1) {
+            $bot->sendMessage($message->getChat()->getId(),
+                "Чтобы отсортировать викторины по дате добавления, введите /sort_date, чтобы сортировать как обычно - /quiz_list");
+        }
+
+        $quizes = $this->paginateQuiz($message->getChat()->getId(), $page);
 
         $quiz_list = [];
         $quiz_message = '';
 
         foreach ($quizes as $quiz) {
             $quiz_list[] = $quiz->name;
-            $quiz_message .= "Название викторины: {$quiz->name} \n Средняя оценка: {$quiz->stars_avg} \n";
+
+            $grade = $quiz->stars_avg ?? 'Пока никто не поставил оценку:(';
+
+            $quiz_message .= "\xF0\x9F\x93\x8C *Название викторины:* _{$quiz->name}_ \n \xE2\xAD\x90 *Средняя оценка:* _ $grade _ \n\n";
         }
 
         if ((int)$page !== 1) {
@@ -38,30 +48,45 @@ class ShowQuizListController extends Controller
             ], true);
 
         
-        $bot->sendMessage($message->getChat()->getId(), $quiz_message);
+        $bot->sendMessage($message->getChat()->getId(), trim($quiz_message), 'markdown');
 
         $bot->sendMessage($message->getChat()->getId(),
             "Выберите викторину", null, false, null, $keyboard);
     }
 
-    private function paginateQuiz($page)
+    private function paginateQuiz($id, $page)
     {
         $pageFrom = ($page * 5) - 5; // вывод по 5 квизов
         $pageTo = 5;
-        $quizes = Quizes::select('quizes.*', 'quiz_stars.stars_avg')
+
+        if (Redis::hget($id, 'status_id') == '9') {
+            $quizes = Quizes::offset($pageFrom)
+                        ->orderBy('id', 'desc')
+                        ->limit($pageTo)
+                        ->get();
+
+            if (!$quizes) {
+                $quizes = Quizes::offset($page)
+                        ->orderBy('id', 'desc')
+                        ->limit($pageTo)
+                        ->get();
+            }
+        } else {
+            $quizes = Quizes::select('quizes.*', 'quiz_stars.stars_avg')
                 ->offset($pageFrom)
                 ->leftJoin('quiz_stars', 'quizes.id', '=', 'quiz_stars.quiz_id')
                 ->orderBy('quiz_stars.stars_avg', 'desc')
                 ->limit($pageTo)
                 ->get();
 
-        if (!$quizes) {
-            $quizes = Quizes::select('quizes.*', 'quiz_stars.stars_avg')
-                    ->offset($page)
-                    ->leftJoin('quiz_stars', 'quizes.id', '=', 'quiz_stars.quiz_id')
-                    ->orderBy('quiz_stars.stars_avg', 'desc')
-                    ->limit($pageTo)
-                    ->get();
+            if (!$quizes) {
+                $quizes = Quizes::select('quizes.*', 'quiz_stars.stars_avg')
+                        ->offset($page)
+                        ->leftJoin('quiz_stars', 'quizes.id', '=', 'quiz_stars.quiz_id')
+                        ->orderBy('quiz_stars.stars_avg', 'desc')
+                        ->limit($pageTo)
+                        ->get();
+            }
         }
 
         return $quizes; // сортировка по средней оценке
