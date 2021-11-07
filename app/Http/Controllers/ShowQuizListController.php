@@ -45,8 +45,8 @@ class ShowQuizListController extends Controller
         $keyboard = new ReplyKeyboardMarkup(
             [
                 $quiz_list
-            ], true);
-
+            ], true
+        );
         
         $bot->sendMessage($message->getChat()->getId(), trim($quiz_message), 'markdown');
 
@@ -59,7 +59,7 @@ class ShowQuizListController extends Controller
         $pageFrom = ($page * 5) - 5; // вывод по 5 квизов
         $pageTo = 5;
 
-        if (Redis::hget($id, 'status_id') == '9') {
+        if (Redis::hget($id, 'status_id') == '9') { // сортировка по дате добавления (id)
             $quizes = Quizes::offset($pageFrom)
                         ->orderBy('id', 'desc')
                         ->limit($pageTo)
@@ -71,7 +71,7 @@ class ShowQuizListController extends Controller
                         ->limit($pageTo)
                         ->get();
             }
-        } else {
+        } else { // сортировка по средней оценке
             $quizes = Quizes::select('quizes.*', 'quiz_stars.stars_avg')
                 ->offset($pageFrom)
                 ->leftJoin('quiz_stars', 'quizes.id', '=', 'quiz_stars.quiz_id')
@@ -89,6 +89,6 @@ class ShowQuizListController extends Controller
             }
         }
 
-        return $quizes; // сортировка по средней оценке
+        return $quizes; 
     }
 }

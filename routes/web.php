@@ -3,7 +3,7 @@
 use App\Http\Controllers\{
     CreateQuizController, ShowQuizController, TestController, ShowUserQuizesController,
     CreateQuizAnswersController, CreateQuizCorrectAnswersController, CreateQuizNameController,
-    CreateQuizQuestionsController, ShowQuizListController
+    CreateQuizQuestionsController, ShowQuizListController, ShowUserResults
 };
 use Illuminate\Support\Facades\{Route, Redis};
 use TelegramBot\Api\{BotApi, Client};
@@ -21,6 +21,7 @@ Route::any('/', function () {
     // 7 - Пользователь создает квиз (Ввод ответов)
     // 8 - Пользователь создает квиз (Выбор правильных ответов)
     // 9 - Пользователь открыл выбор квизов и отсортировал их по дате
+    // 10 - Пользователь открыл просмотр всех своих результатов
 
     // $telegram = new BotApi('2073248573:AAF9U1RECKhm_uX0XXsFOUfR3tXXWn7_j8o');
     $bot = new Client('2073248573:AAF9U1RECKhm_uX0XXsFOUfR3tXXWn7_j8o');
@@ -52,6 +53,11 @@ Route::any('/', function () {
     $bot->command('my_quizes', function ($message) use ($bot) {
         (new ShowUserQuizesController)->showUserQuizes($message, $bot);
     });
+
+    $bot->command('results', function ($message) use ($bot) {
+        Redis::hmset($message->getChat()->getId(), 'status_id', '10');
+        (new ShowUserResults)->showResults($message, $bot);
+    });
     
     $bot->on(function (Update $update) use ($bot) {
         $message = $update->getMessage();
@@ -61,7 +67,7 @@ Route::any('/', function () {
             case 1:
 
                 break;
-            case 2 && 9:
+            case 2:
                 (new ShowQuizController)->selectQuizByName($update, $bot);
                 break;
             case 3:
@@ -81,6 +87,12 @@ Route::any('/', function () {
                 break;
             case 8:
                 (new CreateQuizCorrectAnswersController)->createQuizCorrectAnswers($update, $bot);
+                break;
+            case 9:
+                (new ShowQuizController)->selectQuizByName($update, $bot);
+                break;
+            case 10:
+                (new ShowQuizController)->selectQuizByName($update, $bot);
                 break;
         }
     }, function () {

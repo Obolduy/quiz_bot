@@ -6,7 +6,6 @@ use App\Models\{Quizes, Questions, Answers, PassedQuizes, CurrentUserQuiz, Corre
 use Illuminate\Support\Facades\Redis;
 use TelegramBot\Api\Types\ReplyKeyboardMarkup;
 
-
 class ShowQuizController extends Controller
 {
     public function selectQuizByName($update, $bot)
@@ -18,8 +17,8 @@ class ShowQuizController extends Controller
         $quiz = Quizes::where('name', $message_text)->first();
 
         if ($quiz) {
-            Redis::hmset($id, 'status_id', '3');
-            Redis::hmset($id, "quiz_id", $quiz->id);
+            Redis::hset($id, 'status_id', '3');
+            Redis::hset($id, "quiz_id", $quiz->id);
 
             $bot->sendMessage($id, "Напишите 'Начать', чтобы начать викторину");
         } else if ($message_text == 'Далее') {

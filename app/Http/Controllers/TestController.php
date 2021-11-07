@@ -18,19 +18,26 @@ class TestController extends Controller
 
     public function test(Request $request)
     {   
-        $page = 1;
+        $results = Quizes::select('passed_quizes.*', 'quizes.name')
+                    ->leftJoin('passed_quizes', 'quizes.id', '=', 'passed_quizes.passed_quiz_id')
+                    ->where('passed_quizes.user_id', 810293946)
+                    ->orderBy('passed_quizes.total_score', 'desc')
+                    ->distinct()
+                    ->get();
 
-        $pageFrom = ($page * 5) - 5;
-        $pageTo = 5;
-        $quizes = Quizes::select('quizes.*', 'quiz_stars.stars_avg')
-                ->offset($pageFrom)
-                ->leftJoin('quiz_stars', 'quizes.id', '=', 'quiz_stars.quiz_id')
-                ->orderBy('quiz_stars.stars_avg', 'desc')
-                ->limit($pageTo)
-                ->get();
+        $results_message = '';
+        $quiz_id = [];
 
-        foreach ($quizes as $quiz) {
-            echo $quiz->name . "Оценка: {$quiz->stars_avg} звезд . <br>";
+        foreach ($results as $result) {
+            if (in_array($result->passed_quiz_id, $quiz_id)) {
+                continue;
+            }
+
+            $questions_count = Questions::where('quiz_id', $result->passed_quiz_id)->count('id');
+            $quiz_id[] = $result->passed_quiz_id;
+            $results_message .= "Название викторины: {$result->name} <br> Ваше последнее число набранных баллов: {$result->total_score} из $questions_count <br>";
         }
+
+        echo $results_message;
     }  
 }
