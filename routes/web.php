@@ -5,6 +5,7 @@ use App\Http\Controllers\{
     CreateQuizAnswersController, CreateQuizCorrectAnswersController, CreateQuizNameController,
     CreateQuizQuestionsController, ShowQuizListController, ShowUserResults
 };
+use App\Models\CurrentUserQuiz;
 use Illuminate\Support\Facades\{Route, Redis};
 use TelegramBot\Api\{BotApi, Client};
 use TelegramBot\Api\Types\Update;
@@ -57,6 +58,17 @@ Route::any('/', function () {
     $bot->command('results', function ($message) use ($bot) {
         Redis::hmset($message->getChat()->getId(), 'status_id', '10');
         (new ShowUserResults)->showResults($message, $bot);
+    });
+
+    $bot->command('drop_quiz', function ($message) use ($bot) {
+        Redis::del($message->getChat()->getId());
+        $quiz = CurrentUserQuiz::where('user_id', $message->getChat()->getId())->get();
+
+        foreach ($quiz as $elem) {
+            $elem->delete();
+        }
+
+        $bot->sendMessage($message->getChat()->getId(), 'Тест успешно отменен!');
     });
     
     $bot->on(function (Update $update) use ($bot) {

@@ -20,7 +20,7 @@ class ShowQuizController extends Controller
             Redis::hset($id, 'status_id', '3');
             Redis::hset($id, "quiz_id", $quiz->id);
 
-            $bot->sendMessage($id, "Напишите 'Начать', чтобы начать викторину");
+            $bot->sendMessage($id, "Напишите 'Начать', чтобы начать викторину. \n Чтобы выйти, напишите /drop_quiz");
         } else if ($message_text == 'Далее') {
             (int)$page = Redis::hget($message->getChat()->getId(), 'page') ?? 1;
             Redis::hset($message->getChat()->getId(), 'page', ++$page);
