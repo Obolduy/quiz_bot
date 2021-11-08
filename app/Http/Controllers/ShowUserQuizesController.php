@@ -14,7 +14,7 @@ class ShowUserQuizesController extends Controller
 
         $quizes = Quizes::where('creator_id', $id)->get();
 
-        Redis::hmset($id, 'status_id', '2');
+        Redis::hmset($id, 'status_id', '11');
 
         foreach ($quizes as $quiz) {
             $quiz_list[] = $quiz->name;
@@ -27,6 +27,18 @@ class ShowUserQuizesController extends Controller
             true
         );
 
-        $bot->sendMessage($id, 'Выберите викторину', null, false, null, $keyboard);
+        $bot->sendMessage($id, 'Выберите викторину, чтобы начать с ней взаимодействие', null, false, null, $keyboard);
+    }
+
+    public function selectUserQuiz($update, $bot)
+    {
+        $message = $update->getMessage();
+        $id = $message->getChat()->getId();
+        $message_text = trim(strip_tags($message->getText()));
+
+        $quiz = Quizes::where('name', $message_text)->first();
+        Redis::hmset($id, "quiz_id", $quiz->id);
+
+        $bot->sendMessage($id, "Вы выбрали Вашу викторину {$quiz->name}. Чтобы отредактировать викторину, напишите /quiz_change, чтобы удалить - /quiz_delete, а чтобы пройти её самостоятельно, напишите /quiz_start");
     }
 }

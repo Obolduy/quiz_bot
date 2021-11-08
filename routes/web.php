@@ -3,7 +3,7 @@
 use App\Http\Controllers\{
     CreateQuizController, ShowQuizController, TestController, ShowUserQuizesController,
     CreateQuizAnswersController, CreateQuizCorrectAnswersController, CreateQuizNameController,
-    CreateQuizQuestionsController, ShowQuizListController, ShowUserResults
+    CreateQuizQuestionsController, ShowQuizListController, ShowUserResults, DeleteQuizController
 };
 use App\Models\CurrentUserQuiz;
 use Illuminate\Support\Facades\{Route, Redis};
@@ -23,6 +23,7 @@ Route::any('/', function () {
     // 8 - Пользователь создает квиз (Выбор правильных ответов)
     // 9 - Пользователь открыл выбор квизов и отсортировал их по дате
     // 10 - Пользователь открыл просмотр всех своих результатов
+    // 11 - Пользователь открыл взаимодействие со своими квизами
 
     // $telegram = new BotApi('2073248573:AAF9U1RECKhm_uX0XXsFOUfR3tXXWn7_j8o');
     $bot = new Client('2073248573:AAF9U1RECKhm_uX0XXsFOUfR3tXXWn7_j8o');
@@ -53,6 +54,10 @@ Route::any('/', function () {
 
     $bot->command('my_quizes', function ($message) use ($bot) {
         (new ShowUserQuizesController)->showUserQuizes($message, $bot);
+    });
+
+    $bot->command('delete_quiz', function ($message) use ($bot) {
+        (new DeleteQuizController)->deleteQuiz($message, $bot);
     });
 
     $bot->command('results', function ($message) use ($bot) {
@@ -105,6 +110,9 @@ Route::any('/', function () {
                 break;
             case 10:
                 (new ShowQuizController)->selectQuizByName($update, $bot);
+                break;
+            case 11:
+                (new ShowUserQuizesController)->selectUserQuiz($update, $bot);
                 break;
         }
     }, function () {
