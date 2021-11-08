@@ -24,6 +24,7 @@ Route::any('/', function () {
     // 9 - Пользователь открыл выбор квизов и отсортировал их по дате
     // 10 - Пользователь открыл просмотр всех своих результатов
     // 11 - Пользователь открыл взаимодействие со своими квизами
+    // 12 - Пользователь собирается удалить квиз
 
     // $telegram = new BotApi('2073248573:AAF9U1RECKhm_uX0XXsFOUfR3tXXWn7_j8o');
     $bot = new Client('2073248573:AAF9U1RECKhm_uX0XXsFOUfR3tXXWn7_j8o');
@@ -56,8 +57,8 @@ Route::any('/', function () {
         (new ShowUserQuizesController)->showUserQuizes($message, $bot);
     });
 
-    $bot->command('delete_quiz', function ($message) use ($bot) {
-        (new DeleteQuizController)->deleteQuiz($message, $bot);
+    $bot->command('quiz_delete', function ($message) use ($bot) {
+        (new DeleteQuizController)->deleteQuizConfirmation($message, $bot);
     });
 
     $bot->command('results', function ($message) use ($bot) {
@@ -113,6 +114,9 @@ Route::any('/', function () {
                 break;
             case 11:
                 (new ShowUserQuizesController)->selectUserQuiz($update, $bot);
+                break;
+            case 12:
+                (new DeleteQuizController)->deleteQuiz($update, $bot);
                 break;
         }
     }, function () {
