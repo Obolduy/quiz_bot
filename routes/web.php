@@ -28,8 +28,9 @@ Route::any('/', function () {
     // 12 - Пользователь собирается удалить квиз
     // 13 - Пользователь редактирует квиз (Начало)
     // 14 - Пользователь редактирует квиз (Название)
-    // 15 - Пользователь редактирует квиз (Вопрос)
-    // 16 - Пользователь редактирует квиз (Ответ)
+    // 15 - Пользователь редактирует квиз (Выбрать вопрос)
+    // 16 - Пользователь редактирует квиз (Записать вопрос)
+    // 17 - Пользователь редактирует квиз (Ответ)
 
     // $telegram = new BotApi('2073248573:AAF9U1RECKhm_uX0XXsFOUfR3tXXWn7_j8o');
     $bot = new Client('2073248573:AAF9U1RECKhm_uX0XXsFOUfR3tXXWn7_j8o');
@@ -135,6 +136,11 @@ Route::any('/', function () {
             case 14:
                 (new ChangeQuizController)->changeQuizName($update, $bot);
                 break;
+            case 15:
+            case 16:
+                (new ChangeQuizController)->changeQuestion($update, $bot);
+                break;
+                
         }
     }, function () {
         return true;

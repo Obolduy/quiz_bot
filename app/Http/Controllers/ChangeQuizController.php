@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Quizes;
+use App\Models\{Questions, Quizes};
 use Illuminate\Support\Facades\Redis;
 use TelegramBot\Api\Types\ReplyKeyboardMarkup;
 
@@ -41,6 +41,9 @@ class ChangeQuizController extends Controller
                 break;
             case "вопрос":
                 Redis::hmset($id, 'status_id', '15');
+                
+                $this->changeQuestion($update, $bot);
+
                 break;
             case "ответ":
                 Redis::hmset($id, 'status_id', '16');
@@ -65,7 +68,67 @@ class ChangeQuizController extends Controller
             $quiz->save();
 
             Redis::hmset($id, 'status_id', '1');
+            Redis::hdel($id, 'quiz_id');
+
             $bot->sendMessage($id, "Название викторины успешно изменено!");
+        }
+    }
+
+    public function changeQuestion($update, $bot)
+    {
+        $message = $update->getMessage();
+        $id = $message->getChat()->getId();
+        $message_text = trim(strip_tags($message->getText()));
+
+        $questions = Questions::where('quiz_id', Redis::hget($id, 'quiz_id'))->get();
+
+        foreach ($questions as $question) {
+            $questions_list[] = $question->question;
+        }
+
+        if (mb_strtolower($message_text, 'UTF-8') == 'вопрос') {
+            $keyboard = new ReplyKeyboardMarkup(
+                [
+                    $questions_list
+                ], 
+                true
+            );
+    
+            $bot->sendMessage($id, 'Выберите, какой вопрос Вы хотите отредактировать', null, false, null, $keyboard);
+        } else if (in_array($message_text, $questions_list)) {
+            foreach ($questions as $question) {
+                if ($question->question == $message_text) {
+                    Redis::hmset($id, 'question_id', $question->id);
+
+                    break;
+                }
+            }
+
+            Redis::hmset($id, 'status_id', '16');
+            $bot->sendMessage($id, "Введите новое название");
+        } else {
+            if (Redis::hget($id, 'status_id') == '16') {
+                $question = Questions::find(Redis::hget($id, 'question_id'));
+
+                $message_array = str_split($message_text);
+
+                if (!in_array('?', $message_array)) {
+                    array_push($message_array, '?');
+                }
+
+                $message_text = implode('', $message_array);
+
+                $question->question = $message_text;
+                $question->save();
+
+                Redis::hmset($id, 'status_id', '1');
+                Redis::hdel($id, 'quiz_id');
+                Redis::hdel($id, 'question_id');
+
+                $bot->sendMessage($id, "Вопрос успешно изменен, не забудьте обновить ответы к нему!");
+            } else {
+                $bot->sendMessage($id, "Неправильное название вопроса");
+            }
         }
     }
 }
