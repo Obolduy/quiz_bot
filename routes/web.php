@@ -61,6 +61,11 @@ Route::any('/', function () {
         (new DeleteQuizController)->deleteQuizConfirmation($message, $bot);
     });
 
+    $bot->command('quiz_start', function ($message) use ($bot) {
+        $quiz_id = Redis::hget($message->getChat()->getId(), 'quiz_id');
+        (new ShowQuizController)->setAndStartQuizMessage($quiz_id, $message->getChat()->getId(), $bot);
+    });
+
     $bot->command('results', function ($message) use ($bot) {
         Redis::hmset($message->getChat()->getId(), 'status_id', '10');
         (new ShowUserResults)->showResults($message, $bot);
@@ -82,9 +87,6 @@ Route::any('/', function () {
         $id = $message->getChat()->getId();
 
         switch (Redis::hmget($id, 'status_id')[0]) {
-            case 1:
-
-                break;
             case 2:
                 (new ShowQuizController)->selectQuizByName($update, $bot);
                 break;

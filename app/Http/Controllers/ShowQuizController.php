@@ -17,10 +17,7 @@ class ShowQuizController extends Controller
         $quiz = Quizes::where('name', $message_text)->first();
 
         if ($quiz) {
-            Redis::hset($id, 'status_id', '3');
-            Redis::hset($id, "quiz_id", $quiz->id);
-
-            $bot->sendMessage($id, "Напишите 'Начать', чтобы начать викторину. \n Чтобы выйти, напишите /drop_quiz");
+            $this->setAndStartQuizMessage($quiz->id, $id, $bot);
         } else if ($message_text == 'Далее') {
             (int)$page = Redis::hget($message->getChat()->getId(), 'page') ?? 1;
             Redis::hset($message->getChat()->getId(), 'page', ++$page);
@@ -162,5 +159,13 @@ class ShowQuizController extends Controller
 
         Redis::hmset($id, "quiz_id", 0);
         Redis::hmset($id, "status_id", 4);
+    }
+
+    public function setAndStartQuizMessage($quiz_id, $user_id, $bot)
+    {
+        Redis::hset($user_id, 'status_id', '3');
+        Redis::hset($user_id, "quiz_id", $quiz_id);
+
+        $bot->sendMessage($user_id, "Напишите 'Начать', чтобы начать викторину. \n Чтобы выйти, напишите /drop_quiz");
     }
 }
