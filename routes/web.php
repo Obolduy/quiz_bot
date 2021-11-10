@@ -37,6 +37,7 @@ Route::any('/', function () {
     $bot = new Client('2073248573:AAF9U1RECKhm_uX0XXsFOUfR3tXXWn7_j8o');
 
     $bot->command('start', function ($message) use ($bot) {
+        Redis::del($message->getChat()->getId());
         Redis::hmset($message->getChat()->getId(), 'status_id', '1');
 
         $bot->sendMessage($message->getChat()->getId(),
@@ -142,8 +143,10 @@ Route::any('/', function () {
                 (new ChangeQuizController)->changeQuestion($update, $bot);
                 break;
             case 17:
-            case 18:
                 (new ChangeQuizController)->changeAnswerStart($update, $bot);
+                break;
+            case 18:
+                (new ChangeQuizController)->changeAnswer($update, $bot);
                 break;
                 
         }

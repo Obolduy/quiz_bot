@@ -108,7 +108,7 @@ class ChangeQuizController extends Controller
             }
 
             Redis::hmset($id, 'status_id', '16');
-            $bot->sendMessage($id, "Введите новое название");
+            $bot->sendMessage($id, "Введите новый вопрос");
         } else {
             if (Redis::hget($id, 'status_id') == '16') {
                 $question = Questions::find(Redis::hget($id, 'question_id'));
@@ -180,6 +180,7 @@ class ChangeQuizController extends Controller
                 if ($answer->answer === $message_text) {
                     Redis::hset($id, 'status_id', '18');
                     Redis::hset($id, 'answer_id', $answer->id);
+                    Redis::hset($id, 'question_id', $answer->question_id);
 
                     $bot->sendMessage($id, "Вы собираетесь изменить ответ \"$message_text\" к вопросу \"{$answer->question}\", введите новый ответ. Обратите внимание, что изменение ответа не влияет на то, является ли он правильным. \"Правильность\" ответа вы сможете указать в другом разделе."); die();
                 }
@@ -187,5 +188,24 @@ class ChangeQuizController extends Controller
 
             $bot->sendMessage($id, "Ответ некорректный");
         }
+    }
+
+    public function changeAnswer($update, $bot)
+    {
+        $message = $update->getMessage();
+        $id = $message->getChat()->getId();
+        $message_text = trim(strip_tags($message->getText()));
+
+        $answer = Answers::find(Redis::hget($id, 'answer_id'));
+
+        $answer->answer = $message_text;
+        $answer->save();
+
+        Redis::hmset($id, 'status_id', '1');
+        Redis::hdel($id, 'quiz_id');
+        Redis::hdel($id, 'question_id');
+        Redis::hdel($id, 'answer_id');
+
+        $bot->sendMessage($id, "Ответ успешно изменен.");
     }
 }
