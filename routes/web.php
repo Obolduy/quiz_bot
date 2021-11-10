@@ -32,6 +32,8 @@ Route::any('/', function () {
     // 16 - Пользователь редактирует квиз (Записать вопрос)
     // 17 - Пользователь редактирует квиз (Выбрать ответ)
     // 18 - Пользователь редактирует квиз (Записать ответ)
+    // 19 - Пользователь редактирует квиз (Изменить правильный ответ (выбор вопроса))
+    // 20 - Пользователь редактирует квиз (Изменить правильный ответ (Запись ответа))
 
     // $telegram = new BotApi('2073248573:AAF9U1RECKhm_uX0XXsFOUfR3tXXWn7_j8o');
     $bot = new Client('2073248573:AAF9U1RECKhm_uX0XXsFOUfR3tXXWn7_j8o');
@@ -41,7 +43,7 @@ Route::any('/', function () {
         Redis::hmset($message->getChat()->getId(), 'status_id', '1');
 
         $bot->sendMessage($message->getChat()->getId(),
-            'Чтобы создать викторину, напиши /quiz_create, чтобы выбрать готовую, введи /quiz_list');
+            'Чтобы создать викторину, напиши /quiz_create, чтобы выбрать готовую, введи /quiz_list. А также Вы можете написать /my_quizes, чтобы посмотреть Ваши созданные викторины.');
     });
 
     $bot->command('quiz_list', function ($message) use ($bot) {
@@ -71,6 +73,15 @@ Route::any('/', function () {
 
     $bot->command('quiz_change', function ($message) use ($bot) {
         (new ChangeQuizController)->changeQuizStart($message, $bot);
+    });
+
+    $bot->command('change_correct_answer', function ($message) use ($bot) {
+        if (Redis::hget($message->getChat()->getId(), 'status_id') == 17 || Redis::hget($message->getChat()->getId(), 'status_id') == 19) {
+            (new ChangeQuizController)->changeCorrectAnswerStart($message, $bot);
+        } else {
+            $bot->sendMessage($message->getChat()->getId(), 'Команда некорректна');
+        }
+        
     });
 
     $bot->command('quiz_start', function ($message) use ($bot) {
@@ -147,6 +158,12 @@ Route::any('/', function () {
                 break;
             case 18:
                 (new ChangeQuizController)->changeAnswer($update, $bot);
+                break;
+            case 19:
+                (new ChangeQuizController)->changeCorrectAnswerGetAnswers($update, $bot);
+                break;
+            case 20:
+                (new ChangeQuizController)->changeCorrectAnswerSignAnswers($update, $bot);
                 break;
                 
         }

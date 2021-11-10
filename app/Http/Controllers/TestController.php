@@ -18,36 +18,17 @@ class TestController extends Controller
 
     public function test(Request $request)
     {   
-        $answers = Answers::select('answers.id', 'answers.answer', 'questions.id AS question_id', 'questions.question')
-                            ->leftJoin('questions', 'questions.id', '=', 'answers.question_id')
-                            ->leftJoin('quizes', 'quizes.id', '=', 'questions.quiz_id')
-                            ->where('quizes.id', 2)
-                            ->get();
+        $id = 810293946;
 
-        // foreach ($answers as $answer) {
-        //     echo $answer->id . '<br>';
-        //     echo $answer->answer . '<br>';
-        //     echo $answer->question_id . '<br>';
-        //     echo $answer->question . '<br>';
-        // }
+        Redis::hmset($id, 'status_id', '19');
 
-        $message_text = '[вопрос 3 кстати?] ОТВЕТ1';
+        $questions = Questions::where('quiz_id', Redis::hgset($id, 'quiz_id'))->get();
 
-        $matches = [];
-        preg_match('#\[(.+)\]#u', $message_text, $matches);
-
-        foreach ($answers as $answer) {
-            if ($matches && $matches[1] !== $answer->question) {
-                continue;
-            }
-
-            if ($matches && $matches[1] === $answer->question) {
-                $message_text = trim(str_replace($matches[0], ' ', $message_text));
-            }
-
-            if ($answer->answer === $message_text) {
-                echo $answer->answer .' '. $answer->id;
-            }
+        $questions_list = [];
+        foreach ($questions as $question) {
+            $questions_list[] = $question->question;
         }
+
+        var_dump($questions_list);
     }  
 }
