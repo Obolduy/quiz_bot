@@ -30,7 +30,8 @@ Route::any('/', function () {
     // 14 - Пользователь редактирует квиз (Название)
     // 15 - Пользователь редактирует квиз (Выбрать вопрос)
     // 16 - Пользователь редактирует квиз (Записать вопрос)
-    // 17 - Пользователь редактирует квиз (Ответ)
+    // 17 - Пользователь редактирует квиз (Выбрать ответ)
+    // 18 - Пользователь редактирует квиз (Записать ответ)
 
     // $telegram = new BotApi('2073248573:AAF9U1RECKhm_uX0XXsFOUfR3tXXWn7_j8o');
     $bot = new Client('2073248573:AAF9U1RECKhm_uX0XXsFOUfR3tXXWn7_j8o');
@@ -139,6 +140,10 @@ Route::any('/', function () {
             case 15:
             case 16:
                 (new ChangeQuizController)->changeQuestion($update, $bot);
+                break;
+            case 17:
+            case 18:
+                (new ChangeQuizController)->changeAnswerStart($update, $bot);
                 break;
                 
         }

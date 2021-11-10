@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\{Questions, Quizes};
+use App\Models\{Answers, Questions, Quizes};
 use Illuminate\Support\Facades\Redis;
 use TelegramBot\Api\Types\ReplyKeyboardMarkup;
 
@@ -46,7 +46,10 @@ class ChangeQuizController extends Controller
 
                 break;
             case "ответ":
-                Redis::hmset($id, 'status_id', '16');
+                Redis::hmset($id, 'status_id', '17');
+                                
+                $this->changeAnswerStart($update, $bot);
+
                 break;
             default:
                 $bot->sendMessage($id, 'Команда не распознана, пожалуйста, уточните, что Вы хотите.');
@@ -129,6 +132,60 @@ class ChangeQuizController extends Controller
             } else {
                 $bot->sendMessage($id, "Неправильное название вопроса");
             }
+        }
+    }
+
+    public function changeAnswerStart($update, $bot)
+    {
+        $message = $update->getMessage();
+        $id = $message->getChat()->getId();
+        $message_text = trim(strip_tags($message->getText()));
+
+        $answers = Answers::select('answers.id', 'answers.answer', 'questions.id AS question_id', 'questions.question')
+                            ->leftJoin('questions', 'questions.id', '=', 'answers.question_id')
+                            ->leftJoin('quizes', 'quizes.id', '=', 'questions.quiz_id')
+                            ->where('quizes.id', Redis::hget($id, 'quiz_id'))
+                            ->get();
+
+        if (mb_strtolower($message_text, 'UTF-8') == 'ответ') {
+            $answer_list = '';
+            $questions = [];
+            
+            foreach ($answers as $answer) {
+                if (!in_array($answer->question, $questions)) {
+                    $questions[] = $answer->question;
+
+                    $answer_list .= "Вопрос \"{$answer->question}\" \n";
+                }
+
+                $answer_list .= $answer->answer . "\n";
+            }
+            
+            $answer_list .= 'Если у Вас есть одинаковые ответы на разные вопросы, укажите в квадратных скобках вопрос, ответ к которому Вы хотите изменить.';
+
+            $bot->sendMessage($id, $answer_list);
+        } else {
+            $matches = [];
+            preg_match('#\[(.+)\]#u', $message_text, $matches);
+
+            foreach ($answers as $answer) {
+                if ($matches && $matches[1] !== $answer->question) {
+                    continue;
+                }
+
+                if ($matches && $matches[1] === $answer->question) {
+                    $message_text = trim(str_replace($matches[0], ' ', $message_text));
+                }
+
+                if ($answer->answer === $message_text) {
+                    Redis::hset($id, 'status_id', '18');
+                    Redis::hset($id, 'answer_id', $answer->id);
+
+                    $bot->sendMessage($id, "Вы собираетесь изменить ответ \"$message_text\" к вопросу \"{$answer->question}\", введите новый ответ. Обратите внимание, что изменение ответа не влияет на то, является ли он правильным. \"Правильность\" ответа вы сможете указать в другом разделе."); die();
+                }
+            }
+
+            $bot->sendMessage($id, "Ответ некорректный");
         }
     }
 }

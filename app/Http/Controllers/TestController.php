@@ -18,26 +18,36 @@ class TestController extends Controller
 
     public function test(Request $request)
     {   
-        $results = Quizes::select('passed_quizes.*', 'quizes.name')
-                    ->leftJoin('passed_quizes', 'quizes.id', '=', 'passed_quizes.passed_quiz_id')
-                    ->where('passed_quizes.user_id', 810293946)
-                    ->orderBy('passed_quizes.total_score', 'desc')
-                    ->distinct()
-                    ->get();
+        $answers = Answers::select('answers.id', 'answers.answer', 'questions.id AS question_id', 'questions.question')
+                            ->leftJoin('questions', 'questions.id', '=', 'answers.question_id')
+                            ->leftJoin('quizes', 'quizes.id', '=', 'questions.quiz_id')
+                            ->where('quizes.id', 2)
+                            ->get();
 
-        $results_message = '';
-        $quiz_id = [];
+        // foreach ($answers as $answer) {
+        //     echo $answer->id . '<br>';
+        //     echo $answer->answer . '<br>';
+        //     echo $answer->question_id . '<br>';
+        //     echo $answer->question . '<br>';
+        // }
 
-        foreach ($results as $result) {
-            if (in_array($result->passed_quiz_id, $quiz_id)) {
+        $message_text = '[вопрос 3 кстати?] ОТВЕТ1';
+
+        $matches = [];
+        preg_match('#\[(.+)\]#u', $message_text, $matches);
+
+        foreach ($answers as $answer) {
+            if ($matches && $matches[1] !== $answer->question) {
                 continue;
             }
 
-            $questions_count = Questions::where('quiz_id', $result->passed_quiz_id)->count('id');
-            $quiz_id[] = $result->passed_quiz_id;
-            $results_message .= "Название викторины: {$result->name} <br> Ваше последнее число набранных баллов: {$result->total_score} из $questions_count <br>";
-        }
+            if ($matches && $matches[1] === $answer->question) {
+                $message_text = trim(str_replace($matches[0], ' ', $message_text));
+            }
 
-        echo $results_message;
+            if ($answer->answer === $message_text) {
+                echo $answer->answer .' '. $answer->id;
+            }
+        }
     }  
 }
