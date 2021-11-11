@@ -76,7 +76,7 @@ Route::any('/', function () {
     });
 
     $bot->command('change_correct_answer', function ($message) use ($bot) {
-        if (Redis::hget($message->getChat()->getId(), 'status_id') == 17 || Redis::hget($message->getChat()->getId(), 'status_id') == 19) {
+        if (Redis::hget($message->getChat()->getId(), 'status_id') == 17) {
             (new ChangeQuizController)->changeCorrectAnswerStart($message, $bot);
         } else {
             $bot->sendMessage($message->getChat()->getId(), 'Команда некорректна');
@@ -111,6 +111,8 @@ Route::any('/', function () {
 
         switch (Redis::hmget($id, 'status_id')[0]) {
             case 2:
+            case 9:
+            case 10:
                 (new ShowQuizController)->selectQuizByName($update, $bot);
                 break;
             case 3:
@@ -130,12 +132,6 @@ Route::any('/', function () {
                 break;
             case 8:
                 (new CreateQuizCorrectAnswersController)->createQuizCorrectAnswers($update, $bot);
-                break;
-            case 9:
-                (new ShowQuizController)->selectQuizByName($update, $bot);
-                break;
-            case 10:
-                (new ShowQuizController)->selectQuizByName($update, $bot);
                 break;
             case 11:
                 (new ShowUserQuizesController)->selectUserQuiz($update, $bot);

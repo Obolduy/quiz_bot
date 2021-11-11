@@ -30,8 +30,6 @@ class ChangeQuizController extends Controller
         $id = $message->getChat()->getId();
         $message_text = trim(strip_tags(mb_strtolower($message->getText(), 'UTF-8')));
 
-        // в кейсах пускай методы принмают $update и пускай там идет отсев что если текст равен кейсу 
-        // то это типа начало изменения а если наоборот то само изменение как в добавлении короче
         switch ($message_text) {
             case "название":
                 Redis::hmset($id, 'status_id', '14');
@@ -90,48 +88,19 @@ class ChangeQuizController extends Controller
         }
 
         if (mb_strtolower($message_text, 'UTF-8') == 'вопрос') {
-            $keyboard = new ReplyKeyboardMarkup(
-                [
-                    $questions_list
-                ], 
-                true
-            );
-    
-            $bot->sendMessage($id, 'Выберите, какой вопрос Вы хотите отредактировать', null, false, null, $keyboard);
-        } else if (in_array($message_text, $questions_list)) {
-            foreach ($questions as $question) {
-                if ($question->question == $message_text) {
-                    Redis::hmset($id, 'question_id', $question->id);
+            $this->sendQuestionsList($bot, $id, $questions_list);
+        }
 
-                    break;
-                }
-            }
+        if (Redis::hget($id, 'status_id') == 16) {
+            $this->setNewQuestionTitle($message_text, Questions::find(Redis::hget($id, 'question_id')));
 
-            Redis::hmset($id, 'status_id', '16');
-            $bot->sendMessage($id, "Введите новый вопрос");
+            Redis::hmset($id, 'status_id', '1');
+            Redis::hdel($id, 'quiz_id');
+            Redis::hdel($id, 'question_id');
+
+            $bot->sendMessage($id, "Вопрос успешно изменен, не забудьте обновить ответы к нему!");
         } else {
-            if (Redis::hget($id, 'status_id') == '16') {
-                $question = Questions::find(Redis::hget($id, 'question_id'));
-
-                $message_array = str_split($message_text);
-
-                if (!in_array('?', $message_array)) {
-                    array_push($message_array, '?');
-                }
-
-                $message_text = implode('', $message_array);
-
-                $question->question = $message_text;
-                $question->save();
-
-                Redis::hmset($id, 'status_id', '1');
-                Redis::hdel($id, 'quiz_id');
-                Redis::hdel($id, 'question_id');
-
-                $bot->sendMessage($id, "Вопрос успешно изменен, не забудьте обновить ответы к нему!");
-            } else {
-                $bot->sendMessage($id, "Неправильное название вопроса");
-            }
+            $this->rememberSelectedQuestionId($bot, $message_text, $id, $questions, $questions_list);
         }
     }
 
@@ -292,5 +261,51 @@ class ChangeQuizController extends Controller
         } else {
             $bot->sendMessage($id, 'Ответ некорректен');
         }
+    }
+
+    private function sendQuestionsList($bot, $user_id, array $questions_list): void
+    {
+        $keyboard = new ReplyKeyboardMarkup(
+            [
+                $questions_list
+            ], 
+            true
+        );
+
+        $bot->sendMessage($user_id, 'Выберите, какой вопрос Вы хотите отредактировать', null, false, null, $keyboard);
+    }
+
+    private function rememberSelectedQuestionId($bot, $message_text, $user_id, $questions, $questions_list)
+    {
+        if (in_array($message_text, $questions_list)) {
+            foreach ($questions as $question) {
+                if ($question->question == $message_text) {
+                    Redis::hmset($user_id, 'question_id', $question->id);
+
+                    break;
+                }
+            }
+
+            Redis::hmset($user_id, 'status_id', '16');
+            $bot->sendMessage($user_id, "Введите новый вопрос");
+        } else {
+            if (mb_strtolower($message_text, 'UTF-8') !== 'вопрос') {
+                $bot->sendMessage($user_id, "Вопрос некорректен");
+            }
+        }
+    }
+
+    private function setNewQuestionTitle(string $message_text, $question): void
+    {
+        $message_array = str_split($message_text);
+
+        if ($message_array[count($message_array) - 1] !== '?') {
+            array_push($message_array, '?');
+        }
+
+        $message_text = implode('', $message_array);
+
+        $question->question = $message_text;
+        $question->save();
     }
 }
