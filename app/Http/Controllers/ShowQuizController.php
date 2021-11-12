@@ -44,7 +44,7 @@ class ShowQuizController extends Controller
         $current_user_quiz->save();
     }
 
-    public function quiz($update, $bot)
+    public function showQuiz($update, $bot)
     {   
         $message = $update->getMessage();
         $id = $message->getChat()->getId();
@@ -59,79 +59,25 @@ class ShowQuizController extends Controller
                 $bot->sendMessage($id, 'Введите, пожалуйста, корректный ответ'); die();
             }
         } 
-        
-        $questions = Questions::where('quiz_id', $quiz_id)->get();
 
         $question_text = '';
 
+        $questions = Questions::where('quiz_id', $quiz_id)->get();
         foreach ($questions as $question) {
-            $passed_questions = CurrentUserQuiz::where('user_id', $id)
-                                ->where('passed_question_id', $question->id)
+            $passed_questions = CurrentUserQuiz::where('user_id', $id)->where('passed_question_id', $question->id)
                                 ->first();
 
             if (!$passed_questions) {
                 $question_text = $question->question;
 
-                $answers = Answers::where('question_id', $question->id)->get();
-
-                CurrentUserQuiz::create([
-                    'quiz_id' => $quiz_id,
-                    'user_id' => $id,
-                    'passed_question_id' => $question->id
-                ]);
-
-                foreach ($answers as $answer) {
-                    $answer_list[] = $answer->answer;
-                }
-        
-                $keyboard = new ReplyKeyboardMarkup(
-                    [
-                        $answer_list
-                    ], true
-                );
+                $keyboard = $this->getKeyboardWithAnswers($id, $quiz_id, $question->id);
 
                 break;
             }
         }
 
-        if ($question_text == '') {
-            $score = 0;
-
-            $current_user_quiz = CurrentUserQuiz::where('user_id', $id)
-                                ->where('quiz_id', $quiz_id)->get();
-            
-            foreach ($current_user_quiz as $elem) {
-                $correct_answers = CorrectAnswers::where('question_id', $elem->passed_question_id)
-                                    ->first();
-
-
-                if ($correct_answers->answer_id == $elem->passed_answer_id) {
-                    $score++;
-                }
-            }
-
-            PassedQuizes::create([
-                'passed_quiz_id' => $quiz_id, 
-                'user_id' => $id,
-                'total_score' => $score
-            ]);
-        }
-
-        if (isset($score)) {
-            foreach ($current_user_quiz as $elem) {
-                $elem->delete();
-            }
-
-            Redis::hmset($id, "status_id", 4);
-
-            $keyboard = new ReplyKeyboardMarkup(
-                [
-                    ["1", "2", "3", "4", "5"]
-                ], true, true
-            );
-
-            $bot->sendMessage($id, "Колличество набранных Вами баллов: $score. \n
-                Пожалуйста, оцените викторину;)", null, false, null, $keyboard);
+        if (!$question_text) {
+            $this->finishQuiz($bot, $id, $quiz_id);
         } else {
             $bot->sendMessage($id, $question_text);
             $bot->sendMessage($id, 'Выберите правильный ответ', null, false, null, $keyboard);
@@ -167,5 +113,69 @@ class ShowQuizController extends Controller
         Redis::hset($user_id, "quiz_id", $quiz_id);
 
         $bot->sendMessage($user_id, "Напишите 'Начать', чтобы начать викторину. \n Чтобы выйти, напишите /drop_quiz");
+    }
+
+    private function getKeyboardWithAnswers($user_id, $quiz_id, $question_id): ReplyKeyboardMarkup
+    {
+        $answers = Answers::where('question_id', $question_id)->get();
+
+        CurrentUserQuiz::create([
+            'quiz_id' => $quiz_id,
+            'user_id' => $user_id,
+            'passed_question_id' => $question_id
+        ]);
+
+        foreach ($answers as $answer) {
+            $answer_list[] = $answer->answer;
+        }
+
+        return new ReplyKeyboardMarkup(
+            [
+                $answer_list
+            ], true
+        );
+    }
+
+    private function finishQuiz($bot, $user_id, $quiz_id)
+    {
+        $current_user_quiz = CurrentUserQuiz::where('user_id', $user_id)->where('quiz_id', $quiz_id)->get();
+
+        $score = $this->scoreCount($user_id, $quiz_id, $current_user_quiz);
+
+        foreach ($current_user_quiz as $elem) {
+            $elem->delete();
+        }
+
+        Redis::hmset($user_id, "status_id", 4);
+
+        $keyboard = new ReplyKeyboardMarkup(
+            [
+                ["1", "2", "3", "4", "5"]
+            ], true, true
+        );
+
+        $bot->sendMessage($user_id, "Колличество набранных Вами баллов: $score. \n
+            Пожалуйста, оцените викторину;)", null, false, null, $keyboard);
+    }
+
+    private function scoreCount($user_id, $quiz_id, $current_user_quiz): int
+    {
+        $score = 0;
+
+        foreach ($current_user_quiz as $elem) {
+            $correct_answers = CorrectAnswers::where('question_id', $elem->passed_question_id)->first();
+
+            if ($correct_answers->answer_id == $elem->passed_answer_id) {
+                $score++;
+            }
+        }
+
+        PassedQuizes::create([
+            'passed_quiz_id' => $quiz_id, 
+            'user_id' => $user_id,
+            'total_score' => $score
+        ]);
+
+        return $score;
     }
 }

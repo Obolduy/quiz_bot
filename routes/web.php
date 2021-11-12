@@ -1,5 +1,9 @@
 <?php
 
+use App\Models\CurrentUserQuiz;
+use Illuminate\Support\Facades\{Redis, Route};
+use TelegramBot\Api\Client;
+use TelegramBot\Api\Types\Update;
 use App\Http\Controllers\{
     CreateQuizController, ShowQuizController, TestController, ShowUserQuizesController,
     CreateQuizAnswersController, CreateQuizCorrectAnswersController, CreateQuizNameController,
@@ -7,12 +11,6 @@ use App\Http\Controllers\{
     ChangeQuizController, ChangeQuestionController, ChangeAnswerController, ChangeCorrectAnswerController,
     ChangeQuizNameController
 };
-use App\Models\CurrentUserQuiz;
-use Illuminate\Support\Facades\{Route, Redis};
-use TelegramBot\Api\{BotApi, Client};
-use TelegramBot\Api\Types\Update;
-
-Route::any('/biba', [TestController::class, 'test']);
 
 Route::any('/', function () {
     // 1 - Пользователь ввел '/start'
@@ -36,7 +34,6 @@ Route::any('/', function () {
     // 19 - Пользователь редактирует квиз (Изменить правильный ответ (выбор вопроса))
     // 20 - Пользователь редактирует квиз (Изменить правильный ответ (Запись ответа))
 
-    // $telegram = new BotApi('2073248573:AAF9U1RECKhm_uX0XXsFOUfR3tXXWn7_j8o');
     $bot = new Client('2073248573:AAF9U1RECKhm_uX0XXsFOUfR3tXXWn7_j8o');
 
     $bot->command('start', function ($message) use ($bot) {
@@ -117,7 +114,7 @@ Route::any('/', function () {
                 (new ShowQuizController)->selectQuizByName($update, $bot);
                 break;
             case 3:
-                (new ShowQuizController)->quiz($update, $bot);
+                (new ShowQuizController)->showQuiz($update, $bot);
                 break;
             case 4:
                 (new ShowQuizController)->quizVote($update, $bot);
