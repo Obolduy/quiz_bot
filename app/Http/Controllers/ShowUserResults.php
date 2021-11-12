@@ -25,7 +25,7 @@ class ShowUserResults extends Controller
 
             $questions_count = Questions::where('quiz_id', $result->passed_quiz_id)->count('id');
             $quiz_id[] = $result->passed_quiz_id;
-            $results_message .= "\xF0\x9F\x93\x8C *Название викторины:* _{$result->name}_ \n \xE2\x9C\x85 *Ваше последнее число набранных баллов:* _ {$result->total_score} из $questions_count _ \n\n";
+            $results_message .= "\xF0\x9F\x93\x8C *Название викторины:* _{$result->name}_ \n \xE2\x9C\x85 *Ваше наивысшее число набранных баллов:* _ {$result->total_score} из $questions_count _ \n\n";
         }
         
         $bot->sendMessage($message->getChat()->getId(), trim($results_message), 'markdown');

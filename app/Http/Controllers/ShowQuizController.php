@@ -79,8 +79,8 @@ class ShowQuizController extends Controller
         if (!$question_text) {
             $this->finishQuiz($bot, $id, $quiz_id);
         } else {
-            $bot->sendMessage($id, $question_text);
-            $bot->sendMessage($id, 'Выберите правильный ответ', null, false, null, $keyboard);
+            $bot->sendMessage($id, "\xF0\x9F\x93\x8D _ $question_text _ ", 'markdown');
+            $bot->sendMessage($id, "\xF0\x9F\x94\x8E *Выберите правильный ответ*", 'markdown', false, null, $keyboard);
         }
     }
 

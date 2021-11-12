@@ -43,13 +43,18 @@ Route::any('/', function () {
             "\xF0\x9F\x86\x95 Чтобы *создать викторину*, напишите /quiz\_create \n\xE2\x9C\x85 Чтобы *выбрать готовую викторину*, напишите /quiz\_list \n\xF0\x9F\x8E\x93Чтобы *посмотреть Ваши созданные викторины*, напишите /my\_quizes", 'markdown');
     });
 
+    $bot->command('help', function ($message) use ($bot) {
+        $bot->sendMessage($message->getChat()->getId(),
+            "*/start* - Главное меню бота\n*/help* - Помощь\n*/quiz_list* - Открыть список всех викторин, отсортированых по оценке\n*/sort_date* - Отсортировать /quiz\_list по дате\n*/quiz_create* - Создать викторину\n*/add_questions_stop* - Прекратить добавление вопросов в создании викторины\n*/my_quizes* - Открыть список созданных Вами викторин\n*/quiz_delete* - Удалить викторину\n*/quiz_change* - Изменить викторину\n*/change_correct_answer* - Изменить правильный ответ при изменении ответов к викторине\n*/quiz_start* - Начать выбранную викторину\n*/results* - Показать результаты пользователя\n*/drop_quiz* - Прекратить прохождение викторины", 'markdown');
+    });
+
     $bot->command('quiz_list', function ($message) use ($bot) {
         (new ShowQuizListController)->showQuizes($message, $bot);
     });
 
     $bot->command('sort_date', function ($message) use ($bot) {
         if (Redis::hget($message->getChat()->getId(), 'status_id') != 2) {
-            $bot->sendMessage($message->getChat()->getId(), 'Команда некорректна'); die();
+            $bot->sendMessage($message->getChat()->getId(), 'Эту команду нельзя применить в данном контексте'); die();
         }
 
         Redis::hmset($message->getChat()->getId(), 'status_id', '9');
@@ -62,7 +67,7 @@ Route::any('/', function () {
 
     $bot->command('add_questions_stop', function ($message) use ($bot) {
         if (Redis::hget($message->getChat()->getId(), 'status_id') != 6) {
-            $bot->sendMessage($message->getChat()->getId(), 'Команда некорректна'); die();
+            $bot->sendMessage($message->getChat()->getId(), 'Эту команду нельзя применить в данном контексте'); die();
         }
 
         (new CreateQuizAnswersController)->createQuizAnswerStart($message, $bot);
@@ -74,7 +79,7 @@ Route::any('/', function () {
 
     $bot->command('quiz_delete', function ($message) use ($bot) {
         if (Redis::hget($message->getChat()->getId(), 'status_id') != 11) {
-            $bot->sendMessage($message->getChat()->getId(), 'Команда некорректна'); die();
+            $bot->sendMessage($message->getChat()->getId(), 'Эту команду нельзя применить в данном контексте'); die();
         }
 
         (new DeleteQuizController)->deleteQuizConfirmation($message, $bot);
@@ -82,7 +87,7 @@ Route::any('/', function () {
 
     $bot->command('quiz_change', function ($message) use ($bot) {
         if (Redis::hget($message->getChat()->getId(), 'status_id') != 11) {
-            $bot->sendMessage($message->getChat()->getId(), 'Команда некорректна'); die();
+            $bot->sendMessage($message->getChat()->getId(), 'Эту команду нельзя применить в данном контексте'); die();
         }
 
         (new ChangeQuizController)->changeQuizStart($message, $bot);
@@ -90,7 +95,7 @@ Route::any('/', function () {
 
     $bot->command('change_correct_answer', function ($message) use ($bot) {
         if (Redis::hget($message->getChat()->getId(), 'status_id') != 17) {
-            $bot->sendMessage($message->getChat()->getId(), 'Команда некорректна'); die();
+            $bot->sendMessage($message->getChat()->getId(), 'Эту команду нельзя применить в данном контексте'); die();
         }
         
         (new ChangeCorrectAnswerController)->getQuestionsByQuizId($message, $bot);
@@ -99,7 +104,7 @@ Route::any('/', function () {
 
     $bot->command('quiz_start', function ($message) use ($bot) {
         if (Redis::hget($message->getChat()->getId(), 'status_id') != 11) {
-            $bot->sendMessage($message->getChat()->getId(), 'Команда некорректна'); die();
+            $bot->sendMessage($message->getChat()->getId(), 'Эту команду нельзя применить в данном контексте'); die();
         }
 
         $quiz_id = Redis::hget($message->getChat()->getId(), 'quiz_id');
@@ -113,7 +118,7 @@ Route::any('/', function () {
 
     $bot->command('drop_quiz', function ($message) use ($bot) {
         if (Redis::hget($message->getChat()->getId(), 'status_id') != 3) {
-            $bot->sendMessage($message->getChat()->getId(), 'Команда некорректна'); die();
+            $bot->sendMessage($message->getChat()->getId(), 'Эту команду нельзя применить в данном контексте'); die();
         }
 
         Redis::del($message->getChat()->getId());
