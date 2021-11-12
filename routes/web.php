@@ -4,7 +4,8 @@ use App\Http\Controllers\{
     CreateQuizController, ShowQuizController, TestController, ShowUserQuizesController,
     CreateQuizAnswersController, CreateQuizCorrectAnswersController, CreateQuizNameController,
     CreateQuizQuestionsController, ShowQuizListController, ShowUserResults, DeleteQuizController,
-    ChangeQuizController, ChangeQuestionController, ChangeAnswerController
+    ChangeQuizController, ChangeQuestionController, ChangeAnswerController, ChangeCorrectAnswerController,
+    ChangeQuizNameController
 };
 use App\Models\CurrentUserQuiz;
 use Illuminate\Support\Facades\{Route, Redis};
@@ -77,7 +78,7 @@ Route::any('/', function () {
 
     $bot->command('change_correct_answer', function ($message) use ($bot) {
         if (Redis::hget($message->getChat()->getId(), 'status_id') == 17) {
-            (new ChangeQuizController)->changeCorrectAnswerStart($message, $bot);
+            (new ChangeCorrectAnswerController)->getQuestionsByQuizId($message, $bot);
         } else {
             $bot->sendMessage($message->getChat()->getId(), 'Команда некорректна');
         }
@@ -143,7 +144,7 @@ Route::any('/', function () {
                 (new ChangeQuizController)->chooseWhatToChange($update, $bot);
                 break;
             case 14:
-                (new ChangeQuizController)->changeQuizName($update, $bot);
+                (new ChangeQuizNameController)->changeQuizName($update, $bot);
                 break;
             case 15:
             case 16:
@@ -156,10 +157,10 @@ Route::any('/', function () {
                 (new ChangeAnswerController)->changeAnswer($update, $bot);
                 break;
             case 19:
-                (new ChangeQuizController)->changeCorrectAnswerGetAnswers($update, $bot);
+                (new ChangeCorrectAnswerController)->getAnswersWithCorrect($update, $bot);
                 break;
             case 20:
-                (new ChangeQuizController)->changeCorrectAnswerSignAnswers($update, $bot);
+                (new ChangeCorrectAnswerController)->signCorrectAnswer($update, $bot);
                 break;
                 
         }
