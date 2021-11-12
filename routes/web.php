@@ -49,6 +49,10 @@ Route::any('/', function () {
     });
 
     $bot->command('sort_date', function ($message) use ($bot) {
+        if (Redis::hget($message->getChat()->getId(), 'status_id') != 2) {
+            $bot->sendMessage($message->getChat()->getId(), 'Команда некорректна'); die();
+        }
+
         Redis::hmset($message->getChat()->getId(), 'status_id', '9');
         (new ShowQuizListController)->showQuizes($message, $bot);
     });
@@ -58,6 +62,10 @@ Route::any('/', function () {
     });
 
     $bot->command('add_questions_stop', function ($message) use ($bot) {
+        if (Redis::hget($message->getChat()->getId(), 'status_id') != 6) {
+            $bot->sendMessage($message->getChat()->getId(), 'Команда некорректна'); die();
+        }
+
         (new CreateQuizAnswersController)->createQuizAnswerStart($message, $bot);
     });
 
@@ -66,23 +74,35 @@ Route::any('/', function () {
     });
 
     $bot->command('quiz_delete', function ($message) use ($bot) {
+        if (Redis::hget($message->getChat()->getId(), 'status_id') != 11) {
+            $bot->sendMessage($message->getChat()->getId(), 'Команда некорректна'); die();
+        }
+
         (new DeleteQuizController)->deleteQuizConfirmation($message, $bot);
     });
 
     $bot->command('quiz_change', function ($message) use ($bot) {
+        if (Redis::hget($message->getChat()->getId(), 'status_id') != 11) {
+            $bot->sendMessage($message->getChat()->getId(), 'Команда некорректна'); die();
+        }
+
         (new ChangeQuizController)->changeQuizStart($message, $bot);
     });
 
     $bot->command('change_correct_answer', function ($message) use ($bot) {
-        if (Redis::hget($message->getChat()->getId(), 'status_id') == 17) {
-            (new ChangeCorrectAnswerController)->getQuestionsByQuizId($message, $bot);
-        } else {
-            $bot->sendMessage($message->getChat()->getId(), 'Команда некорректна');
+        if (Redis::hget($message->getChat()->getId(), 'status_id') != 17) {
+            $bot->sendMessage($message->getChat()->getId(), 'Команда некорректна'); die();
         }
+        
+        (new ChangeCorrectAnswerController)->getQuestionsByQuizId($message, $bot);
         
     });
 
     $bot->command('quiz_start', function ($message) use ($bot) {
+        if (Redis::hget($message->getChat()->getId(), 'status_id') != 11) {
+            $bot->sendMessage($message->getChat()->getId(), 'Команда некорректна'); die();
+        }
+
         $quiz_id = Redis::hget($message->getChat()->getId(), 'quiz_id');
         (new ShowQuizController)->setAndStartQuizMessage($quiz_id, $message->getChat()->getId(), $bot);
     });
@@ -93,6 +113,10 @@ Route::any('/', function () {
     });
 
     $bot->command('drop_quiz', function ($message) use ($bot) {
+        if (Redis::hget($message->getChat()->getId(), 'status_id') != 3) {
+            $bot->sendMessage($message->getChat()->getId(), 'Команда некорректна'); die();
+        }
+
         Redis::del($message->getChat()->getId());
         $quiz = CurrentUserQuiz::where('user_id', $message->getChat()->getId())->get();
 
