@@ -4,7 +4,7 @@ use App\Http\Controllers\{
     CreateQuizController, ShowQuizController, TestController, ShowUserQuizesController,
     CreateQuizAnswersController, CreateQuizCorrectAnswersController, CreateQuizNameController,
     CreateQuizQuestionsController, ShowQuizListController, ShowUserResults, DeleteQuizController,
-    ChangeQuizController, ChangeQuestionController
+    ChangeQuizController, ChangeQuestionController, ChangeAnswerController
 };
 use App\Models\CurrentUserQuiz;
 use Illuminate\Support\Facades\{Route, Redis};
@@ -150,10 +150,10 @@ Route::any('/', function () {
                 (new ChangeQuestionController)->changeQuestion($update, $bot);
                 break;
             case 17:
-                (new ChangeQuizController)->changeAnswerStart($update, $bot);
+                (new ChangeAnswerController)->changeAnswerStart($update, $bot);
                 break;
             case 18:
-                (new ChangeQuizController)->changeAnswer($update, $bot);
+                (new ChangeAnswerController)->changeAnswer($update, $bot);
                 break;
             case 19:
                 (new ChangeQuizController)->changeCorrectAnswerGetAnswers($update, $bot);
