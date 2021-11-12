@@ -5,11 +5,10 @@ use Illuminate\Support\Facades\{Redis, Route};
 use TelegramBot\Api\Client;
 use TelegramBot\Api\Types\Update;
 use App\Http\Controllers\{
-    CreateQuizController, ShowQuizController, TestController, ShowUserQuizesController,
+    CreateQuizController, ShowQuizController, ShowUserQuizesController, ChangeQuizNameController,
     CreateQuizAnswersController, CreateQuizCorrectAnswersController, CreateQuizNameController,
     CreateQuizQuestionsController, ShowQuizListController, ShowUserResults, DeleteQuizController,
-    ChangeQuizController, ChangeQuestionController, ChangeAnswerController, ChangeCorrectAnswerController,
-    ChangeQuizNameController
+    ChangeQuizController, ChangeQuestionController, ChangeAnswerController, ChangeCorrectAnswerController
 };
 
 Route::any('/', function () {
@@ -41,7 +40,7 @@ Route::any('/', function () {
         Redis::hmset($message->getChat()->getId(), 'status_id', '1');
 
         $bot->sendMessage($message->getChat()->getId(),
-            'Чтобы создать викторину, напиши /quiz_create, чтобы выбрать готовую, введи /quiz_list. А также Вы можете написать /my_quizes, чтобы посмотреть Ваши созданные викторины.');
+            "\xF0\x9F\x86\x95 Чтобы *создать викторину*, напишите /quiz\_create \n\xE2\x9C\x85 Чтобы *выбрать готовую викторину*, напишите /quiz\_list \n\xF0\x9F\x8E\x93Чтобы *посмотреть Ваши созданные викторины*, напишите /my\_quizes", 'markdown');
     });
 
     $bot->command('quiz_list', function ($message) use ($bot) {

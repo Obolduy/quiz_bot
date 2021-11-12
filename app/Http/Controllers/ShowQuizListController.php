@@ -18,7 +18,7 @@ class ShowQuizListController extends Controller
 
         if ($page === 1) {
             $bot->sendMessage($message->getChat()->getId(),
-                "Чтобы отсортировать викторины по дате добавления, введите /sort_date, чтобы сортировать как обычно - /quiz_list");
+                "Чтобы *отсортировать викторины* по _дате добавления_, введите /sort\_date, чтобы *сортировать* _как обычно_ - /quiz\_list", 'markdown');
         }
 
         $quizes = $this->paginateQuiz($message->getChat()->getId(), $page);
@@ -51,7 +51,7 @@ class ShowQuizListController extends Controller
         $bot->sendMessage($message->getChat()->getId(), trim($quiz_message), 'markdown');
 
         $bot->sendMessage($message->getChat()->getId(),
-            "Выберите викторину", null, false, null, $keyboard);
+            "\xE2\x9C\x85 *Выберите викторину*", 'markdown', false, null, $keyboard);
     }
 
     private function paginateQuiz($id, $page)

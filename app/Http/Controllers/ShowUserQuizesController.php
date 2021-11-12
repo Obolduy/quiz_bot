@@ -43,9 +43,7 @@ class ShowUserQuizesController extends Controller
 
             $stars = $this->getQuizStars($quiz->id);
 
-            $bot->sendMessage($id, "Вы выбрали Вашу викторину {$quiz->name}.
-            $stars
-            Чтобы отредактировать викторину, напишите /quiz_change, чтобы удалить - /quiz_delete, а чтобы пройти её самостоятельно, напишите /quiz_start");
+            $bot->sendMessage($id, "\xE2\x9C\x85 Вы выбрали Вашу викторину *{$quiz->name}*.\n\xE2\xAD\x90 $stars\n\xF0\x9F\x93\x9D Чтобы *отредактировать викторину*, напишите /quiz\_change\n\xE2\x9D\x8E Чтобы *удалить викторину*, напишите /quiz\_delete\n\xE2\x9D\x93 Чтобы *пройти викторину самостоятельно*, напишите /quiz\_start", 'markdown');
         } else {
             $bot->sendMessage($id, 'Уточните название викторины');
         }
@@ -66,8 +64,24 @@ class ShowUserQuizesController extends Controller
                 $mark_text = 'оценок';
         }
 
+        $stars_pic = '';
+        for ($i = 1; $i <= $stars_avg; $i++) {
+            $stars_pic .= " \xE2\xAD\x90";
+        }
+
+        switch ($stars_avg) {
+            case '1':
+                $stars_avg .= ' балл';
+                break;
+            case '5':
+                $stars_avg .= ' баллов';
+                break;
+            default:
+                $stars_avg .= ' балла';
+        }
+
         $stars_text = ($votes_count || $stars_avg) ? 
-            "Средняя оценка составляет $stars_avg на основе $votes_count $mark_text." :
+            "Средняя оценка: $stars_pic _($stars_avg)_ на основе $votes_count $mark_text." :
             "Пока никто не оценил Вашу викторину.";
 
         return $stars_text;
