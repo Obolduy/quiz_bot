@@ -11,6 +11,10 @@ use App\Http\Controllers\{
     ChangeQuizController, ChangeQuestionController, ChangeAnswerController, ChangeCorrectAnswerController
 };
 
+Route::any('/biba', function () {
+
+});
+
 Route::any('/', function () {
     // 1 - Пользователь ввел '/start'
     // 2 - Пользователь открыл выбор квизов
@@ -136,6 +140,46 @@ Route::any('/', function () {
         $id = $message->getChat()->getId();
 
         switch (Redis::hmget($id, 'status_id')[0]) {
+            case 1:
+                $message = $update->getMessage();
+                $id = $message->getChat()->getId();
+                $message_text = $message->getPhoto();
+
+                foreach ($message_text as $elem) {
+                    $photo_id = $elem->getFileId();
+                }
+
+                $curl = curl_init('https://api.telegram.org/bot2073248573:AAF9U1RECKhm_uX0XXsFOUfR3tXXWn7_j8o/getFile');
+                curl_setopt($curl, CURLOPT_POST, 1);
+                curl_setopt($curl, CURLOPT_POSTFIELDS, ['file_id' => $photo_id]);
+                curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($curl, CURLOPT_HEADER, false);
+                $res = curl_exec($curl);
+                curl_close($curl);
+
+                $res = json_decode($res, true);
+
+                if ($res['ok']) {
+                    $matches = [];
+                    preg_match('#\.(.+)$#u', $res['result']['file_path'], $matches);
+
+                    $src  = 'https://api.telegram.org/file/bot2073248573:AAF9U1RECKhm_uX0XXsFOUfR3tXXWn7_j8o/'.$res['result']['file_path'];
+                    $dest = "questions/". md5(time() . basename($src)) . '.' .$matches[1];
+
+                    copy($src, $dest);
+
+                    $link = 'https://4dac-178-66-224-250.ngrok.io/' . $dest;
+
+                    $bot->sendMessage($id, $link);
+
+                    sleep(4);
+                    
+                    $media = new \TelegramBot\Api\Types\InputMedia\ArrayOfInputMedia();
+                    $media->addItem(new TelegramBot\Api\Types\InputMedia\InputMediaPhoto($link));
+                    $bot->sendMediaGroup($id, $media);
+                }
+
+                break;
             case 2:
             case 9:
             case 10:
@@ -195,5 +239,5 @@ Route::any('/', function () {
     
     $bot->run();
     // Applications/ngrok http test_bot.local
-    // 'https://api.telegram.org/bot2073248573:AAF9U1RECKhm_uX0XXsFOUfR3tXXWn7_j8o/setWebhook?url=https://3a5d-178-66-255-65.ngrok.io'
+    // 'https://api.telegram.org/bot2073248573:AAF9U1RECKhm_uX0XXsFOUfR3tXXWn7_j8o/setWebhook?url=https://1784-178-66-224-250.ngrok.io'
 });

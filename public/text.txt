@@ -1,0 +1,152 @@
+<!-- <pre class='xdebug-var-dump' dir='ltr'>
+<small>/Users/Vladislav/projects/test_bot/routes/web.php:160:</small>
+<b>object</b>(<i>TelegramBot\Api\Types\Message</i>)[<i>356</i>]
+  <i>protected</i> 'messageId' <font color='#888a85'>=&gt;</font> <small>int</small> <font color='#4e9a06'>4793</font>
+  <i>protected</i> 'from' <font color='#888a85'>=&gt;</font> 
+    <b>object</b>(<i>TelegramBot\Api\Types\User</i>)[<i>357</i>]
+      <i>protected</i> 'id' <font color='#888a85'>=&gt;</font> <small>int</small> <font color='#4e9a06'>810293946</font>
+      <i>protected</i> 'firstName' <font color='#888a85'>=&gt;</font> <small>string</small> <font color='#cc0000'>'Кокша'</font> <i>(length=10)</i>
+      <i>protected</i> 'lastName' <font color='#888a85'>=&gt;</font> <font color='#3465a4'>null</font>
+      <i>protected</i> 'username' <font color='#888a85'>=&gt;</font> <small>string</small> <font color='#cc0000'>'kokwechka'</font> <i>(length=9)</i>
+      <i>protected</i> 'languageCode' <font color='#888a85'>=&gt;</font> <small>string</small> <font color='#cc0000'>'ru'</font> <i>(length=2)</i>
+      <i>protected</i> 'isBot' <font color='#888a85'>=&gt;</font> <small>boolean</small> <font color='#75507b'>false</font>
+  <i>protected</i> 'date' <font color='#888a85'>=&gt;</font> <small>int</small> <font color='#4e9a06'>1636979607</font>
+  <i>protected</i> 'chat' <font color='#888a85'>=&gt;</font> 
+    <b>object</b>(<i>TelegramBot\Api\Types\Chat</i>)[<i>358</i>]
+      <i>protected</i> 'id' <font color='#888a85'>=&gt;</font> <small>int</small> <font color='#4e9a06'>810293946</font>
+      <i>protected</i> 'type' <font color='#888a85'>=&gt;</font> <small>string</small> <font color='#cc0000'>'private'</font> <i>(length=7)</i>
+      <i>protected</i> 'title' <font color='#888a85'>=&gt;</font> <font color='#3465a4'>null</font>
+      <i>protected</i> 'username' <font color='#888a85'>=&gt;</font> <small>string</small> <font color='#cc0000'>'kokwechka'</font> <i>(length=9)</i>
+      <i>protected</i> 'firstName' <font color='#888a85'>=&gt;</font> <small>string</small> <font color='#cc0000'>'Кокша'</font> <i>(length=10)</i>
+      <i>protected</i> 'lastName' <font color='#888a85'>=&gt;</font> <font color='#3465a4'>null</font>
+      <i>protected</i> 'photo' <font color='#888a85'>=&gt;</font> <font color='#3465a4'>null</font>
+      <i>protected</i> 'bio' <font color='#888a85'>=&gt;</font> <font color='#3465a4'>null</font>
+      <i>protected</i> 'description' <font color='#888a85'>=&gt;</font> <font color='#3465a4'>null</font>
+      <i>protected</i> 'inviteLink' <font color='#888a85'>=&gt;</font> <font color='#3465a4'>null</font>
+      <i>protected</i> 'pinnedMessage' <font color='#888a85'>=&gt;</font> <font color='#3465a4'>null</font>
+      <i>protected</i> 'permissions' <font color='#888a85'>=&gt;</font> <font color='#3465a4'>null</font>
+      <i>protected</i> 'slowModeDelay' <font color='#888a85'>=&gt;</font> <font color='#3465a4'>null</font>
+      <i>protected</i> 'stickerSetName' <font color='#888a85'>=&gt;</font> <font color='#3465a4'>null</font>
+      <i>protected</i> 'canSetStickerSet' <font color='#888a85'>=&gt;</font> <font color='#3465a4'>null</font>
+      <i>protected</i> 'linkedChatId' <font color='#888a85'>=&gt;</font> <font color='#3465a4'>null</font>
+      <i>protected</i> 'location' <font color='#888a85'>=&gt;</font> <font color='#3465a4'>null</font>
+  <i>protected</i> 'forwardFrom' <font color='#888a85'>=&gt;</font> <font color='#3465a4'>null</font>
+  <i>protected</i> 'forwardFromChat' <font color='#888a85'>=&gt;</font> <font color='#3465a4'>null</font>
+  <i>protected</i> 'forwardFromMessageId' <font color='#888a85'>=&gt;</font> <font color='#3465a4'>null</font>
+  <i>protected</i> 'forwardSignature' <font color='#888a85'>=&gt;</font> <font color='#3465a4'>null</font>
+  <i>protected</i> 'forwardSenderName' <font color='#888a85'>=&gt;</font> <font color='#3465a4'>null</font>
+  <i>protected</i> 'forwardDate' <font color='#888a85'>=&gt;</font> <font color='#3465a4'>null</font>
+  <i>protected</i> 'replyToMessage' <font color='#888a85'>=&gt;</font> <font color='#3465a4'>null</font>
+  <i>protected</i> 'editDate' <font color='#888a85'>=&gt;</font> <font color='#3465a4'>null</font>
+  <i>protected</i> 'mediaGroupId' <font color='#888a85'>=&gt;</font> <font color='#3465a4'>null</font>
+  <i>protected</i> 'authorSignature' <font color='#888a85'>=&gt;</font> <font color='#3465a4'>null</font>
+  <i>protected</i> 'text' <font color='#888a85'>=&gt;</font> <font color='#3465a4'>null</font>
+  <i>protected</i> 'entities' <font color='#888a85'>=&gt;</font> <font color='#3465a4'>null</font>
+  <i>protected</i> 'captionEntities' <font color='#888a85'>=&gt;</font> <font color='#3465a4'>null</font>
+  <i>protected</i> 'audio' <font color='#888a85'>=&gt;</font> <font color='#3465a4'>null</font>
+  <i>protected</i> 'document' <font color='#888a85'>=&gt;</font> <font color='#3465a4'>null</font>
+  <i>protected</i> 'animation' <font color='#888a85'>=&gt;</font> <font color='#3465a4'>null</font>
+  <i>protected</i> 'photo' <font color='#888a85'>=&gt;</font> 
+    <b>array</b> <i>(size=4)</i>
+      0 <font color='#888a85'>=&gt;</font> 
+        <b>object</b>(<i>TelegramBot\Api\Types\PhotoSize</i>)[<i>359</i>]
+          <i>protected</i> 'fileId' <font color='#888a85'>=&gt;</font> <small>string</small> <font color='#cc0000'>'AgACAgIAAxkBAAISuWGSU5eplqzXU3pg1lvk8PiN1Q0OAAIFtzEbZh-RSCzRTQ2a1aDLAQADAgADcwADIgQ'</font> <i>(length=83)</i>
+          <i>protected</i> 'width' <font color='#888a85'>=&gt;</font> <small>int</small> <font color='#4e9a06'>90</font>
+          <i>protected</i> 'height' <font color='#888a85'>=&gt;</font> <small>int</small> <font color='#4e9a06'>51</font>
+          <i>protected</i> 'fileSize' <font color='#888a85'>=&gt;</font> <small>int</small> <font color='#4e9a06'>1438</font>
+      1 <font color='#888a85'>=&gt;</font> 
+        <b>object</b>(<i>TelegramBot\Api\Types\PhotoSize</i>)[<i>360</i>]
+          <i>protected</i> 'fileId' <font color='#888a85'>=&gt;</font> <small>string</small> <font color='#cc0000'>'AgACAgIAAxkBAAISuWGSU5eplqzXU3pg1lvk8PiN1Q0OAAIFtzEbZh-RSCzRTQ2a1aDLAQADAgADbQADIgQ'</font> <i>(length=83)</i>
+          <i>protected</i> 'width' <font color='#888a85'>=&gt;</font> <small>int</small> <font color='#4e9a06'>320</font>
+          <i>protected</i> 'height' <font color='#888a85'>=&gt;</font> <small>int</small> <font color='#4e9a06'>180</font>
+          <i>protected</i> 'fileSize' <font color='#888a85'>=&gt;</font> <small>int</small> <font color='#4e9a06'>22897</font>
+      2 <font color='#888a85'>=&gt;</font> 
+        <b>object</b>(<i>TelegramBot\Api\Types\PhotoSize</i>)[<i>361</i>]
+          <i>protected</i> 'fileId' <font color='#888a85'>=&gt;</font> <small>string</small> <font color='#cc0000'>'AgACAgIAAxkBAAISuWGSU5eplqzXU3pg1lvk8PiN1Q0OAAIFtzEbZh-RSCzRTQ2a1aDLAQADAgADeAADIgQ'</font> <i>(length=83)</i>
+          <i>protected</i> 'width' <font color='#888a85'>=&gt;</font> <small>int</small> <font color='#4e9a06'>800</font>
+          <i>protected</i> 'height' <font color='#888a85'>=&gt;</font> <small>int</small> <font color='#4e9a06'>450</font>
+          <i>protected</i> 'fileSize' <font color='#888a85'>=&gt;</font> <small>int</small> <font color='#4e9a06'>103468</font>
+      3 <font color='#888a85'>=&gt;</font> 
+        <b>object</b>(<i>TelegramBot\Api\Types\PhotoSize</i>)[<i>362</i>]
+          <i>protected</i> 'fileId' <font color='#888a85'>=&gt;</font> <small>string</small> <font color='#cc0000'>'AgACAgIAAxkBAAISuWGSU5eplqzXU3pg1lvk8PiN1Q0OAAIFtzEbZh-RSCzRTQ2a1aDLAQADAgADeQADIgQ'</font> <i>(length=83)</i>
+          <i>protected</i> 'width' <font color='#888a85'>=&gt;</font> <small>int</small> <font color='#4e9a06'>1280</font>
+          <i>protected</i> 'height' <font color='#888a85'>=&gt;</font> <small>int</small> <font color='#4e9a06'>720</font>
+          <i>protected</i> 'fileSize' <font color='#888a85'>=&gt;</font> <small>int</small> <font color='#4e9a06'>159355</font>
+  <i>protected</i> 'sticker' <font color='#888a85'>=&gt;</font> <font color='#3465a4'>null</font>
+  <i>protected</i> 'video' <font color='#888a85'>=&gt;</font> <font color='#3465a4'>null</font>
+  <i>protected</i> 'voice' <font color='#888a85'>=&gt;</font> <font color='#3465a4'>null</font>
+  <i>protected</i> 'caption' <font color='#888a85'>=&gt;</font> <font color='#3465a4'>null</font>
+  <i>protected</i> 'contact' <font color='#888a85'>=&gt;</font> <font color='#3465a4'>null</font>
+  <i>protected</i> 'location' <font color='#888a85'>=&gt;</font> <font color='#3465a4'>null</font>
+  <i>protected</i> 'venue' <font color='#888a85'>=&gt;</font> <font color='#3465a4'>null</font>
+  <i>protected</i> 'poll' <font color='#888a85'>=&gt;</font> <font color='#3465a4'>null</font>
+  <i>protected</i> 'dice' <font color='#888a85'>=&gt;</font> <font color='#3465a4'>null</font>
+  <i>protected</i> 'newChatMembers' <font color='#888a85'>=&gt;</font> <font color='#3465a4'>null</font>
+  <i>protected</i> 'leftChatMember' <font color='#888a85'>=&gt;</font> <font color='#3465a4'>null</font>
+  <i>protected</i> 'newChatTitle' <font color='#888a85'>=&gt;</font> <font color='#3465a4'>null</font>
+  <i>protected</i> 'newChatPhoto' <font color='#888a85'>=&gt;</font> <font color='#3465a4'>null</font>
+  <i>protected</i> 'deleteChatPhoto' <font color='#888a85'>=&gt;</font> <font color='#3465a4'>null</font>
+  <i>protected</i> 'groupChatCreated' <font color='#888a85'>=&gt;</font> <font color='#3465a4'>null</font>
+  <i>protected</i> 'supergroupChatCreated' <font color='#888a85'>=&gt;</font> <font color='#3465a4'>null</font>
+  <i>protected</i> 'channelChatCreated' <font color='#888a85'>=&gt;</font> <font color='#3465a4'>null</font>
+  <i>protected</i> 'migrateToChatId' <font color='#888a85'>=&gt;</font> <font color='#3465a4'>null</font>
+  <i>protected</i> 'migrateFromChatId' <font color='#888a85'>=&gt;</font> <font color='#3465a4'>null</font>
+  <i>protected</i> 'pinnedMessage' <font color='#888a85'>=&gt;</font> <font color='#3465a4'>null</font>
+  <i>protected</i> 'invoice' <font color='#888a85'>=&gt;</font> <font color='#3465a4'>null</font>
+  <i>protected</i> 'successfulPayment' <font color='#888a85'>=&gt;</font> <font color='#3465a4'>null</font>
+  <i>protected</i> 'connectedWebsite' <font color='#888a85'>=&gt;</font> <font color='#3465a4'>null</font>
+  <i>protected</i> 'replyMarkup' <font color='#888a85'>=&gt;</font> <font color='#3465a4'>null</font>
+</pre> -->
+
+
+
+
+<!-- <pre class='xdebug-var-dump' dir='ltr'>
+<small>/Users/Vladislav/projects/test_bot/routes/web.php:160:</small>
+<b>array</b> <i>(size=4)</i>
+  0 <font color='#888a85'>=&gt;</font> 
+    <b>object</b>(<i>TelegramBot\Api\Types\PhotoSize</i>)[<i>359</i>]
+      <i>protected</i> 'fileId' <font color='#888a85'>=&gt;</font> <small>string</small> <font color='#cc0000'>'AgACAgIAAxkBAAISumGSVBPfuGEAAV7foGkkoyH-jvPLCgACBbcxG2YfkUgs0U0NmtWgywEAAwIAA3MAAyIE'</font> <i>(length=84)</i>
+      <i>protected</i> 'width' <font color='#888a85'>=&gt;</font> <small>int</small> <font color='#4e9a06'>90</font>
+      <i>protected</i> 'height' <font color='#888a85'>=&gt;</font> <small>int</small> <font color='#4e9a06'>51</font>
+      <i>protected</i> 'fileSize' <font color='#888a85'>=&gt;</font> <small>int</small> <font color='#4e9a06'>1438</font>
+  1 <font color='#888a85'>=&gt;</font> 
+    <b>object</b>(<i>TelegramBot\Api\Types\PhotoSize</i>)[<i>360</i>]
+      <i>protected</i> 'fileId' <font color='#888a85'>=&gt;</font> <small>string</small> <font color='#cc0000'>'AgACAgIAAxkBAAISumGSVBPfuGEAAV7foGkkoyH-jvPLCgACBbcxG2YfkUgs0U0NmtWgywEAAwIAA20AAyIE'</font> <i>(length=84)</i>
+      <i>protected</i> 'width' <font color='#888a85'>=&gt;</font> <small>int</small> <font color='#4e9a06'>320</font>
+      <i>protected</i> 'height' <font color='#888a85'>=&gt;</font> <small>int</small> <font color='#4e9a06'>180</font>
+      <i>protected</i> 'fileSize' <font color='#888a85'>=&gt;</font> <small>int</small> <font color='#4e9a06'>22897</font>
+  2 <font color='#888a85'>=&gt;</font> 
+    <b>object</b>(<i>TelegramBot\Api\Types\PhotoSize</i>)[<i>361</i>]
+      <i>protected</i> 'fileId' <font color='#888a85'>=&gt;</font> <small>string</small> <font color='#cc0000'>'AgACAgIAAxkBAAISumGSVBPfuGEAAV7foGkkoyH-jvPLCgACBbcxG2YfkUgs0U0NmtWgywEAAwIAA3gAAyIE'</font> <i>(length=84)</i>
+      <i>protected</i> 'width' <font color='#888a85'>=&gt;</font> <small>int</small> <font color='#4e9a06'>800</font>
+      <i>protected</i> 'height' <font color='#888a85'>=&gt;</font> <small>int</small> <font color='#4e9a06'>450</font>
+      <i>protected</i> 'fileSize' <font color='#888a85'>=&gt;</font> <small>int</small> <font color='#4e9a06'>103468</font>
+  3 <font color='#888a85'>=&gt;</font> 
+    <b>object</b>(<i>TelegramBot\Api\Types\PhotoSize</i>)[<i>362</i>]
+      <i>protected</i> 'fileId' <font color='#888a85'>=&gt;</font> <small>string</small> <font color='#cc0000'>'AgACAgIAAxkBAAISumGSVBPfuGEAAV7foGkkoyH-jvPLCgACBbcxG2YfkUgs0U0NmtWgywEAAwIAA3kAAyIE'</font> <i>(length=84)</i>
+      <i>protected</i> 'width' <font color='#888a85'>=&gt;</font> <small>int</small> <font color='#4e9a06'>1280</font>
+      <i>protected</i> 'height' <font color='#888a85'>=&gt;</font> <small>int</small> <font color='#4e9a06'>720</font>
+      <i>protected</i> 'fileSize' <font color='#888a85'>=&gt;</font> <small>int</small> <font color='#4e9a06'>159355</font>
+</pre> -->
+
+<!-- AgACAgIAAxkBAAISvGGSVU6AFs52sIl9Bu5RBuk2OJqhAAIFtzEbZh-RSCzRTQ2a1aDLAQADAgADeQADIgQ -->
+
+
+<!-- <pre class='xdebug-var-dump' dir='ltr'>
+<small>/Users/Vladislav/projects/test_bot/routes/web.php:175:</small>
+<b>object</b>(<i>TelegramBot\Api\Types\File</i>)[<i>363</i>]
+  <i>protected</i> 'fileId' <font color='#888a85'>=&gt;</font> <font color='#3465a4'>null</font>
+  <i>protected</i> 'fileSize' <font color='#888a85'>=&gt;</font> <font color='#3465a4'>null</font>
+  <i>protected</i> 'filePath' <font color='#888a85'>=&gt;</font> <font color='#3465a4'>null</font>
+</pre> -->
+
+<!-- <pre class='xdebug-var-dump' dir='ltr'>
+<small>/Users/Vladislav/projects/test_bot/routes/web.php:175:</small>
+<b>object</b>(<i>TelegramBot\Api\Types\File</i>)[<i>363</i>]
+  <i>protected</i> 'fileId' <font color='#888a85'>=&gt;</font> <small>string</small> <font color='#cc0000'>'AgACAgIAAxkBAAISvmGSWNxpez4MzvORxUVDLn7CfdDZAAIFtzEbZh-RSCzRTQ2a1aDLAQADAgADeQADIgQ'</font> <i>(length=83)</i>
+  <i>protected</i> 'fileSize' <font color='#888a85'>=&gt;</font> <font color='#3465a4'>null</font>
+  <i>protected</i> 'filePath' <font color='#888a85'>=&gt;</font> <font color='#3465a4'>null</font>
+</pre> -->
+
+
