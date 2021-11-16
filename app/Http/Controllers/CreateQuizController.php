@@ -39,10 +39,12 @@ class CreateQuizController extends Controller
                     'question' => Redis::hget($id."_create_quiz", "question_$i")
                 ]);
 
-                QuestionPictures::create([
-                    'question_id' => $question->id,
-                    'picture' => Redis::hget($id."_create_quiz_pictures", "picture_$i")
-                ]);
+                if (Redis::hget($id."_create_quiz_pictures", "picture_$i")) {
+                    QuestionPictures::create([
+                        'question_id' => $question->id,
+                        'picture' => Redis::hget($id."_create_quiz_pictures", "picture_$i")
+                    ]);
+                }
 
                 $questions[$i] = $question;
                 $answers_list[$question->id] = Redis::hgetall($id."_create_answers_question_$i");
