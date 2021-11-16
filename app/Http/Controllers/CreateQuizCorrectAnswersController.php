@@ -22,7 +22,7 @@ class CreateQuizCorrectAnswersController extends Controller
 
         $message_array = str_split(str_replace([' ', ',', '.'], '', (int)$message_text));
 
-        if (count($answers) == count($message_array)) {
+        if (count($answers) == count($message_array) && 'готов' !== mb_strtolower($message_text, 'UTF-8')) {
             for ($i = 0; $i <= count($message_array); $i++) {
                 $number = $i + 1;
                 if ($number <= count($message_array)) {
