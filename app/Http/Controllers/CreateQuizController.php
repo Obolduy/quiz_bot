@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Answers;
 use App\Models\CorrectAnswers;
+use App\Models\QuestionPictures;
 use App\Models\Questions;
 use App\Models\Quizes;
 use App\Models\QuizStars;
@@ -36,6 +37,11 @@ class CreateQuizController extends Controller
                 $question = Questions::create([
                     'quiz_id' => $quiz->id,
                     'question' => Redis::hget($id."_create_quiz", "question_$i")
+                ]);
+
+                QuestionPictures::create([
+                    'question_id' => $question->id,
+                    'picture' => Redis::hget($id."_create_quiz_pictures", "picture_$i")
                 ]);
 
                 $questions[$i] = $question;
@@ -73,5 +79,6 @@ class CreateQuizController extends Controller
 
         Redis::del($id."_create_quiz");
         Redis::del($id."_create_correct_answers_question");
+        Redis::del($id."_create_quiz_pictures");
     }
 }

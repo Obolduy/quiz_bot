@@ -11,6 +11,7 @@ use App\Models\Quizes;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Facades\Storage;
 
 class TestController extends Controller
 {
@@ -18,17 +19,49 @@ class TestController extends Controller
 
     public function test(Request $request)
     {   
-        $id = 810293946;
+        echo asset('questions/d6336ce5bfdf9d1ff7a82888cb42fca7.jpg'); die();
+        // file_put_contents('testfile.png', 'qwer.png'); die();
+        // $link = Storage::put("questions", 'qwer.png');
+        // var_dump($link); die();
 
-        Redis::hmset($id, 'status_id', '19');
+        // $id = 810293946;
 
-        $questions = Questions::where('quiz_id', Redis::hgset($id, 'quiz_id'))->get();
+        // if ($request->isMethod('GET')) {
+        //     return view('welcome');
+        // }
 
-        $questions_list = [];
-        foreach ($questions as $question) {
-            $questions_list[] = $question->question;
+        // $test = Storage::put('questions', $request->photo);
+
+        // var_dump($request->photo);
+        // echo asset($test); die();
+
+        $photo_id = 'AgACAgIAAxkBAAITRGGTdcG6_2-1XuSQYQTerHM9oDtNAAIstzEbZh-ZSM_r2uZluz5WAQADAgADeQADIgQ';
+        $curl = curl_init('https://api.telegram.org/bot2073248573:AAF9U1RECKhm_uX0XXsFOUfR3tXXWn7_j8o/getFile');
+        curl_setopt($curl, CURLOPT_POST, 1);
+        curl_setopt($curl, CURLOPT_POSTFIELDS, ['file_id' => $photo_id]);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLOPT_HEADER, false);
+        $res = curl_exec($curl);
+        curl_close($curl);
+
+        $res = json_decode($res, true);
+
+        if ($res['ok']) {
+            $matches = [];
+            preg_match('#\.(.+)$#u', $res['result']['file_path'], $matches);
+
+            $src  = 'https://api.telegram.org/file/bot2073248573:AAF9U1RECKhm_uX0XXsFOUfR3tXXWn7_j8o/'.$res['result']['file_path'];
+            $rename = md5(time() . basename($src)) . '.' .$matches[1];
+
+            copy($src, "questions/$rename");
+
+            // $link = asset($link);
+
+            // sleep(4);
+            
+            // $media = new \TelegramBot\Api\Types\InputMedia\ArrayOfInputMedia();
+            // $media->addItem(new TelegramBot\Api\Types\InputMedia\InputMediaPhoto($link));
+            // $bot->sendMediaGroup($id, $media);
         }
-
-        var_dump($questions_list);
     }  
 }
