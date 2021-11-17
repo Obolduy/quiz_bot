@@ -20,5 +20,19 @@ class TestController extends Controller
 
     public function test(Request $request)
     {   
+        $questions = Questions::where('quiz_id', 41)->get();
+
+        foreach ($questions as $question) {
+            $questions_list[] = $question->question;
+
+            $picture = QuestionPictures::where('question_id', $question->id)->value('picture');
+
+            $questions_pictures = [];
+            if ($picture) {
+                $questions_pictures[] = $picture;
+            }
+        }
+
+        var_dump($questions_pictures);
     }  
 }

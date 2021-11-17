@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Questions;
+use App\Models\{Questions, QuestionPictures};
 use Illuminate\Support\Facades\Redis;
 use TelegramBot\Api\Types\ReplyKeyboardMarkup;
+use TelegramBot\Api\Types\InputMedia\{ArrayOfInputMedia, InputMediaPhoto};
 
 class ChangeQuestionController extends Controller
 {
@@ -13,19 +14,48 @@ class ChangeQuestionController extends Controller
         $message = $update->getMessage();
         $id = $message->getChat()->getId();
         $message_text = trim(strip_tags($message->getText()));
+        $message_photo = $message->getPhoto();
+
+        if ($message_text == '') {
+            $message_text = trim(strip_tags($message->getCaption()));
+        }
 
         $questions = Questions::where('quiz_id', Redis::hget($id, 'quiz_id'))->get();
 
+        $questions_pictures = [];
         foreach ($questions as $question) {
             $questions_list[] = $question->question;
+
+            $picture = QuestionPictures::where('question_id', $question->id)->value('picture');
+
+            if ($picture) {
+                $questions_pictures[$question->question] = $picture;
+            }
         }
 
         if (mb_strtolower($message_text, 'UTF-8') == 'вопрос') {
             $this->sendQuestionsList($bot, $id, $questions_list);
+
+            if ($questions_pictures) {
+                $this->sendQuestionsPictures($bot, $id, $questions_pictures);
+            }
         }
 
         if (Redis::hget($id, 'status_id') == 16) {
-            $this->setNewQuestionTitle($message_text, Questions::find(Redis::hget($id, 'question_id')));
+            $question = Questions::find(Redis::hget($id, 'question_id'));
+
+            $this->setNewQuestionTitle($message_text, $question);
+
+            if ($message_photo) {
+                $picture_name = (new AddPicturesController)->addQuestionPicture($message_photo);
+
+                $picture = QuestionPictures::firstOrCreate(
+                    ['question_id' => $question->id],
+                    ['picture' => $picture_name]
+                );
+                $picture->picture = $picture_name;
+                $picture->save();
+            }
 
             Redis::hmset($id, 'status_id', '1');
             Redis::hdel($id, 'quiz_id');
@@ -47,6 +77,20 @@ class ChangeQuestionController extends Controller
         );
 
         $bot->sendMessage($user_id, 'Выберите, какой вопрос Вы хотите отредактировать', null, false, null, $keyboard);
+    }
+
+    private function sendQuestionsPictures($bot, $user_id, array $questions_pictures): void
+    {
+        $question_text = "К следующим вопросам имеются изображения: \n";
+
+        $media = new ArrayOfInputMedia();
+        foreach ($questions_pictures as $question => $picture) {
+            $media->addItem(new InputMediaPhoto(asset("questions/$picture"), $question));
+            $question_text .= "*$question* \n";
+        }
+
+        $bot->sendMessage($user_id, $question_text, 'markdown');
+        $bot->sendMediaGroup($user_id, $media);
     }
 
     private function rememberSelectedQuestionId($bot, $message_text, $user_id, $questions, $questions_list)
