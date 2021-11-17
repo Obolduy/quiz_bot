@@ -19,7 +19,7 @@ class ShowUserResults extends Controller
         $quiz_id = [];
 
         foreach ($results as $result) {
-            if (in_array($result->passed_quiz_id, $quiz_id)) {
+            if (in_array($result->passed_quiz_id, $quiz_id)) { // отсеивает дубли
                 continue;
             }
 

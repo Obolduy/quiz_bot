@@ -38,8 +38,8 @@ class ShowQuizController extends Controller
     {
         $current_user_quiz = CurrentUserQuiz::where('user_id', $id)->orderByDesc('id')->first();
 
-        $answer = Answers::where('question_id', $current_user_quiz->passed_question_id)->
-            where('answer', $message_text)->first();
+        $answer = Answers::where('question_id', $current_user_quiz->passed_question_id)
+                        ->where('answer', $message_text)->first();
 
         $current_user_quiz->passed_answer_id = $answer->id;
         $current_user_quiz->save();
@@ -68,7 +68,7 @@ class ShowQuizController extends Controller
             $passed_questions = CurrentUserQuiz::where('user_id', $id)->where('passed_question_id', $question->id)
                                 ->first();
 
-            if (!$passed_questions) {
+            if (!$passed_questions) { // проверка, есть ли айди вопроса в числе отвеченныъ
                 $question_text = $question->question;
                 $picture = QuestionPictures::where('question_id', $question->id)->value('picture');
 
@@ -78,7 +78,7 @@ class ShowQuizController extends Controller
             }
         }
 
-        if (!$question_text) {
+        if (!$question_text) {// отсутствие текста вопроса подразумевает, что все вопросы помечены, как пройденные
             $this->finishQuiz($bot, $id, $quiz_id);
         } else {
             if ($picture) {

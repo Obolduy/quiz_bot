@@ -80,7 +80,7 @@ class ShowUserQuizesController extends Controller
                 $stars_avg .= ' балла';
         }
 
-        $stars_text = ($votes_count || $stars_avg) ? 
+        $stars_text = ($votes_count && $stars_avg) ? 
             "Средняя оценка: $stars_pic _($stars_avg)_ на основе $votes_count $mark_text." :
             "Пока никто не оценил Вашу викторину.";
 

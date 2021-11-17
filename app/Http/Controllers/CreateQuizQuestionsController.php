@@ -12,7 +12,7 @@ class CreateQuizQuestionsController extends Controller
         $id = $message->getChat()->getId();
         $question = trim(strip_tags($message->getText()));
 
-        if ($question == '') {
+        if ($question == '') { // если текст - это не сообщение, а подпись к фото
             $question = trim(strip_tags($message->getCaption()));
         }
 

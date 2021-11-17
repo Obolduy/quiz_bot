@@ -16,7 +16,7 @@ class ChangeQuestionController extends Controller
         $message_text = trim(strip_tags($message->getText()));
         $message_photo = $message->getPhoto();
 
-        if ($message_text == '') {
+        if ($message_text == '') { // если текст - это не сообщение, а подпись к фото
             $message_text = trim(strip_tags($message->getCaption()));
         }
 
@@ -33,6 +33,7 @@ class ChangeQuestionController extends Controller
             }
         }
 
+        // если пользователь написал "вопрос", вывести список вопросов
         if (mb_strtolower($message_text, 'UTF-8') == 'вопрос') {
             $this->sendQuestionsList($bot, $id, $questions_list);
 
@@ -41,6 +42,7 @@ class ChangeQuestionController extends Controller
             }
         }
 
+        // status_id=16 означает, что бот ожидает, что сообщение пользователя - новый вопрос
         if (Redis::hget($id, 'status_id') == 16) {
             $question = Questions::find(Redis::hget($id, 'question_id'));
 
@@ -62,7 +64,7 @@ class ChangeQuestionController extends Controller
             Redis::hdel($id, 'question_id');
 
             $bot->sendMessage($id, "Вопрос успешно изменен, не забудьте обновить ответы к нему!");
-        } else {
+        } else { // бот ожидает, что сообщение - это текст вопроса для изменению
             $this->rememberSelectedQuestionId($bot, $message_text, $id, $questions, $questions_list);
         }
     }
@@ -93,7 +95,7 @@ class ChangeQuestionController extends Controller
         $bot->sendMediaGroup($user_id, $media);
     }
 
-    private function rememberSelectedQuestionId($bot, $message_text, $user_id, $questions, $questions_list)
+    private function rememberSelectedQuestionId($bot, $message_text, $user_id, $questions, $questions_list): void
     {
         if (in_array($message_text, $questions_list)) {
             foreach ($questions as $question) {
