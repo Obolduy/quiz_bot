@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\{Quizes, Questions, Answers, PassedQuizes, CurrentUserQuiz, CorrectAnswers, QuizStars};
+use App\Models\{Quizes, Questions, Answers, PassedQuizes, CurrentUserQuiz, CorrectAnswers, QuestionPictures, QuizStars};
 use Illuminate\Support\Facades\Redis;
+use TelegramBot\Api\Types\InputMedia\{ArrayOfInputMedia, InputMediaPhoto};
 use TelegramBot\Api\Types\ReplyKeyboardMarkup;
 
 class ShowQuizController extends Controller
@@ -69,6 +70,7 @@ class ShowQuizController extends Controller
 
             if (!$passed_questions) {
                 $question_text = $question->question;
+                $picture = QuestionPictures::where('question_id', $question->id)->value('picture');
 
                 $keyboard = $this->getKeyboardWithAnswers($id, $quiz_id, $question->id);
 
@@ -79,7 +81,14 @@ class ShowQuizController extends Controller
         if (!$question_text) {
             $this->finishQuiz($bot, $id, $quiz_id);
         } else {
-            $bot->sendMessage($id, "\xF0\x9F\x93\x8D _ $question_text _ ", 'markdown');
+            if ($picture) {
+                $media = new ArrayOfInputMedia();
+                $media->addItem(new InputMediaPhoto(asset("questions/$picture"), "\xF0\x9F\x93\x8D _ $question_text _ ", 'markdown'));
+                $bot->sendMediaGroup($id, $media);
+            } else {
+                $bot->sendMessage($id, "\xF0\x9F\x93\x8D _ $question_text _ ", 'markdown');
+            }
+            
             $bot->sendMessage($id, "\xF0\x9F\x94\x8E *Выберите правильный ответ*", 'markdown', false, null, $keyboard);
         }
     }
