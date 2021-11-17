@@ -139,19 +139,6 @@ Route::any('/', function () {
         $id = $message->getChat()->getId();
 
         switch (Redis::hmget($id, 'status_id')[0]) {
-            case 1:
-                $message = $update->getMessage();
-                $id = $message->getChat()->getId();
-                // $message_photo = $message->getPhoto();
-                $message_text = $message->getText();
-                // $caption = $message->getCaption();
-
-                // $bot->sendMessage($id, "Вот что ты написал: $message_text");
-                
-                $media = new \TelegramBot\Api\Types\InputMedia\ArrayOfInputMedia();
-                $media->addItem(new TelegramBot\Api\Types\InputMedia\InputMediaPhoto(asset('questions/ad5dbd614c0a0143d611da5cbdeeba61.jpg'), 'тестовый текст)'));
-                $bot->sendMediaGroup($id, $media);
-                break;
             case 2:
             case 9:
             case 10:
