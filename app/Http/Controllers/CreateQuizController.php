@@ -2,12 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Answers;
-use App\Models\CorrectAnswers;
-use App\Models\QuestionPictures;
-use App\Models\Questions;
-use App\Models\Quizes;
-use App\Models\QuizStars;
+use App\Models\{Answers, CorrectAnswers, QuestionPictures, Questions, Quizes, QuizStars};
 use Illuminate\Support\Facades\{Redis, DB};
 
 class CreateQuizController extends Controller

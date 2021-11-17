@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\{Quizes, Questions, Answers, CorrectAnswers, CurrentUserQuiz};
-use Illuminate\Support\Facades\Redis;
+use App\Models\{Quizes, Questions, Answers, CorrectAnswers, CurrentUserQuiz, QuestionPictures};
+use Illuminate\Support\Facades\{Redis, Storage};
 
 class DeleteQuizController extends Controller
 {
@@ -35,6 +35,13 @@ class DeleteQuizController extends Controller
                 $correct_answers = CorrectAnswers::where('question_id', $question->id)->get();
                 foreach ($correct_answers as $correct_answer) {
                     $correct_answer->delete();
+                }
+
+                $picture = QuestionPictures::where('question_id', $question->id)->first();
+                if ($picture) {
+                    Storage::delete("questions/{$picture->picture}");
+
+                    $picture->delete();
                 }
 
                 $question->delete();

@@ -20,8 +20,5 @@ class TestController extends Controller
 
     public function test(Request $request)
     {   
-        $picture = QuestionPictures::where('question_id', 65)->value('picture')->first();
-
-        var_dump($picture);
     }  
 }
