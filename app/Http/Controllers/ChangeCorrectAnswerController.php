@@ -4,11 +4,19 @@ namespace App\Http\Controllers;
 
 use App\Models\{Answers, CorrectAnswers, Questions};
 use Illuminate\Support\Facades\Redis;
-use TelegramBot\Api\Types\ReplyKeyboardMarkup;
+use TelegramBot\Api\Client;
+use TelegramBot\Api\Types\{Message, ReplyKeyboardMarkup, Update};
 
 class ChangeCorrectAnswerController extends Controller
 {
-    public function getQuestionsByQuizId($message, $bot)
+    /**
+     * Shows questions list by quiz_id
+     * @param Message
+     * @param Client
+     * @return void
+     */
+
+    public function getQuestionsByQuizId(Message $message, Client $bot): void
     {
         $id = $message->getChat()->getId();
 
@@ -31,7 +39,15 @@ class ChangeCorrectAnswerController extends Controller
         $bot->sendMessage($id, 'Выберите вопрос', null, false, null, $keyboard);
     }
 
-    public function getAnswersWithCorrect($update, $bot)
+    /**
+     * Takes message text and searches question by it. 
+     * Returns keyboard with list of answers with correct answer marked.
+     * @param Update
+     * @param Client
+     * @return void
+     */
+
+    public function getAnswersWithCorrect(Update $update, Client $bot): void
     {
         $message = $update->getMessage();
         $id = $message->getChat()->getId();
@@ -57,12 +73,20 @@ class ChangeCorrectAnswerController extends Controller
         $this->showAnswers($answers_list, $id, $bot);
     }
 
-    public function signCorrectAnswer($update, $bot)
+    /**
+     * Signs correct answer into DB.
+     * @param Update
+     * @param Client
+     * @return void
+     */
+
+    public function signCorrectAnswer(Update $update, Client $bot): void
     {
         $message = $update->getMessage();
         $id = $message->getChat()->getId();
         $message_text = trim(strip_tags($message->getText()));
 
+        // если пользователь оставил правильный ответ неизменным, обрезаем у строки слово "(Правильный)"
         preg_match('#\(Правильный\)#u', $message_text, $matches);
 
         if ($matches) {
@@ -85,7 +109,15 @@ class ChangeCorrectAnswerController extends Controller
         }
     }
 
-    private function showAnswers($answers_list, $user_id, $bot)
+    /**
+     * Sends keyboard with question's answers with correct answer marked
+     * @param array array of question's answers
+     * @param int user's id
+     * @param Client
+     * @return void
+     */
+
+    private function showAnswers(array $answers_list, int $user_id, Client $bot): void
     {
         $keyboard = new ReplyKeyboardMarkup(
             [

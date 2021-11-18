@@ -3,10 +3,19 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Redis;
+use TelegramBot\Api\Client;
+use TelegramBot\Api\Types\Update;
 
 class CreateQuizQuestionsController extends Controller
 {
-    public function createQuizQuestions($update, $bot)
+    /**
+     * Sets question and question picture if exists by user's message
+     * @param Update
+     * @param Client
+     * @return void
+     */
+
+    public function createQuizQuestions(Update $update, Client $bot): void
     {
         $message = $update->getMessage();
         $id = $message->getChat()->getId();

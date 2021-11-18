@@ -4,10 +4,19 @@ namespace App\Http\Controllers;
 
 use App\Models\Answers;
 use Illuminate\Support\Facades\Redis;
+use TelegramBot\Api\Client;
+use TelegramBot\Api\Types\Update;
 
 class ChangeAnswerController extends Controller
 {
-    public function changeAnswerStart($update, $bot)
+    /**
+     * Starts the script of change answer to the user's question
+     * @param Update
+     * @param Client
+     * @return void
+     */
+
+    public function changeAnswerStart(Update $update, Client $bot): void
     {
         $message = $update->getMessage();
         $id = $message->getChat()->getId();
@@ -26,7 +35,14 @@ class ChangeAnswerController extends Controller
         }
     }
 
-    public function changeAnswer($update, $bot)
+    /**
+     * Save answer changes into DB
+     * @param Update
+     * @param Client
+     * @return void
+     */
+
+    public function changeAnswer(Update $update, Client $bot): void
     {
         $message = $update->getMessage();
         $id = $message->getChat()->getId();
@@ -45,7 +61,15 @@ class ChangeAnswerController extends Controller
         $bot->sendMessage($id, "Ответ успешно изменен.");
     }
 
-    private function sendAnswersList($bot, $user_id, $answers)
+    /**
+     * Sends to user list of quiz answers
+     * @param Client
+     * @param int user's id
+     * @param Answers
+     * @return void
+     */
+
+    private function sendAnswersList(Client $bot, int $user_id, Answers $answers): void
     {
         $answer_list = '';
         $questions = [];
@@ -65,7 +89,16 @@ class ChangeAnswerController extends Controller
         $bot->sendMessage($user_id, $answer_list);
     }
 
-    private function checkAnswerName($bot, $user_id, $message_text, $answers)
+    /**
+     * Checks if the user's message is the answer
+     * @param Client
+     * @param int user's id
+     * @param string text of user's message
+     * @param Answers list of answers
+     * @return void
+     */
+
+    private function checkAnswerName(Client $bot, int $user_id, string $message_text, Answers $answers): void
     {
         $matches = [];
         preg_match('#\[(.+)\]#u', $message_text, $matches);
@@ -85,7 +118,14 @@ class ChangeAnswerController extends Controller
         $bot->sendMessage($user_id, "Ответ некорректный");
     }
 
-    private function checkQuestionName($message_text, $answer): string
+    /**
+     * Checks does user's message has question hint
+     * @param string user's message
+     * @param Answers
+     * @return string message text without question
+     */
+
+    private function checkQuestionName(string $message_text, Answers $answer): string
     {
         $matches = [];
         preg_match('#\[(.+)\]#u', $message_text, $matches);

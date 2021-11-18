@@ -4,10 +4,19 @@ namespace App\Http\Controllers;
 
 use App\Models\{Quizes, Questions, Answers, CorrectAnswers, CurrentUserQuiz, QuestionPictures};
 use Illuminate\Support\Facades\{Redis, Storage};
+use TelegramBot\Api\Client;
+use TelegramBot\Api\Types\{Message, Update};
 
 class DeleteQuizController extends Controller
 {
-    public function deleteQuizConfirmation($message, $bot)
+    /**
+     * Asks user about quiz deletion
+     * @param Message
+     * @param Client
+     * @return void
+     */
+
+    public function deleteQuizConfirmation(Message $message, Client $bot): void
     {
         $id = $message->getChat()->getId();
 
@@ -16,7 +25,14 @@ class DeleteQuizController extends Controller
         $bot->sendMessage($id, 'Вы уверены, что хотите удалить викторину? Напишите "Да" или "Нет" соответственно Вашему решению.');
     }
 
-    public function deleteQuiz($update, $bot)
+    /**
+     * Deletes quiz (name, questions, answers, correct answers and pictures)
+     * @param Update
+     * @param Client
+     * @return void
+     */
+
+    public function deleteQuiz(Update $update, Client $bot): void
     {
         $message = $update->getMessage();
         $id = $message->getChat()->getId();

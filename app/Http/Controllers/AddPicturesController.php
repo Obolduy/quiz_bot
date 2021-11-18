@@ -4,6 +4,13 @@ namespace App\Http\Controllers;
 
 class AddPicturesController extends Controller
 {
+    /**
+     * Adds downloaded from telegram user's picture into server's directory
+     * and returns hashed name of the file
+     * @param array array \w downloaded picture
+     * @return string hashed name of the file
+     */
+
     public function addQuestionPicture(array $message_photo): string
     {
         foreach ($message_photo as $elem) {
@@ -25,6 +32,13 @@ class AddPicturesController extends Controller
             return $rename;
         }
     }
+
+    /**
+     * Downloads user's picture from telegram server via curl and returns array with data
+     * @param string path to the file
+     * @param array array of POST params
+     * @return array with JSON response
+     */
 
     private function curlDownloadPicture(string $link, array $postData): array
     {

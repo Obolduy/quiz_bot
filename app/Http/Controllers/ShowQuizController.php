@@ -4,12 +4,20 @@ namespace App\Http\Controllers;
 
 use App\Models\{Quizes, Questions, Answers, PassedQuizes, CurrentUserQuiz, CorrectAnswers, QuestionPictures, QuizStars};
 use Illuminate\Support\Facades\Redis;
+use TelegramBot\Api\Client;
 use TelegramBot\Api\Types\InputMedia\{ArrayOfInputMedia, InputMediaPhoto};
-use TelegramBot\Api\Types\ReplyKeyboardMarkup;
+use TelegramBot\Api\Types\{ReplyKeyboardMarkup, Update};
 
 class ShowQuizController extends Controller
 {
-    public function selectQuizByName($update, $bot)
+    /**
+     * Takes user's message and starts quiz by it or paginate list of quizes
+     * @param Update
+     * @param Client
+     * @return void
+     */
+
+    public function selectQuizByName(Update $update, Client $bot): void
     {
         $message = $update->getMessage();
         $id = $message->getChat()->getId();
@@ -34,18 +42,15 @@ class ShowQuizController extends Controller
         }
     }
 
-    public function saveAnswer($id, $message_text)
-    {
-        $current_user_quiz = CurrentUserQuiz::where('user_id', $id)->orderByDesc('id')->first();
+    /**
+     * Shows question if quiz isn't end, saves answer by user message 
+     * and ends quiz if it's no more questions
+     * @param Update
+     * @param Client
+     * @return void
+     */
 
-        $answer = Answers::where('question_id', $current_user_quiz->passed_question_id)
-                        ->where('answer', $message_text)->first();
-
-        $current_user_quiz->passed_answer_id = $answer->id;
-        $current_user_quiz->save();
-    }
-
-    public function showQuiz($update, $bot)
+    public function showQuiz(Update $update, Client $bot): void
     {   
         $message = $update->getMessage();
         $id = $message->getChat()->getId();
@@ -78,7 +83,7 @@ class ShowQuizController extends Controller
             }
         }
 
-        if (!$question_text) {// отсутствие текста вопроса подразумевает, что все вопросы помечены, как пройденные
+        if (!$question_text) { // отсутствие текста вопроса подразумевает, что все вопросы помечены как пройденные
             $this->finishQuiz($bot, $id, $quiz_id);
         } else {
             if ($picture) {
@@ -93,7 +98,14 @@ class ShowQuizController extends Controller
         }
     }
 
-    public function quizVote($update, $bot)
+    /**
+     * Sets user's quiz rating
+     * @param Update
+     * @param Client
+     * @return void
+     */
+
+    public function quizVote(Update $update, Client $bot): void
     {
         $message = $update->getMessage();
         $id = $message->getChat()->getId();
@@ -116,7 +128,15 @@ class ShowQuizController extends Controller
         Redis::hmset($id, "status_id", 4);
     }
 
-    public function setAndStartQuizMessage($quiz_id, $user_id, $bot)
+    /**
+     * Sets status and quiz id into Redis and sends message about starting quiz
+     * @param int quiz id
+     * @param int user's id
+     * @param Client
+     * @return void
+     */
+
+    public function setAndStartQuizMessage(int $quiz_id, int $user_id, Client $bot): void
     {
         Redis::hset($user_id, 'status_id', '3');
         Redis::hset($user_id, "quiz_id", $quiz_id);
@@ -124,7 +144,33 @@ class ShowQuizController extends Controller
         $bot->sendMessage($user_id, "Напишите 'Начать', чтобы начать викторину. \n Чтобы выйти, напишите /drop_quiz");
     }
 
-    private function getKeyboardWithAnswers($user_id, $quiz_id, $question_id): ReplyKeyboardMarkup
+    /**
+     * Save answer into current_user_quiz table
+     * @param int user's id
+     * @param string user's message
+     * @return void
+     */
+
+    private function saveAnswer(int $user_id, string $message_text): void
+    {
+        $current_user_quiz = CurrentUserQuiz::where('user_id', $user_id)->orderByDesc('id')->first();
+
+        $answer = Answers::where('question_id', $current_user_quiz->passed_question_id)
+                        ->where('answer', $message_text)->first();
+
+        $current_user_quiz->passed_answer_id = $answer->id;
+        $current_user_quiz->save();
+    }
+
+    /**
+     * Adds column into current_user_quiz and sends keyboard with question answers
+     * @param int user's id
+     * @param int quiz id
+     * @param int question id
+     * @return ReplyKeyboardMarkup
+     */
+
+    private function getKeyboardWithAnswers(int $user_id, int $quiz_id, int $question_id): ReplyKeyboardMarkup
     {
         $answers = Answers::where('question_id', $question_id)->get();
 
@@ -145,7 +191,15 @@ class ShowQuizController extends Controller
         );
     }
 
-    private function finishQuiz($bot, $user_id, $quiz_id)
+    /**
+     * Shows count of correct answers and asks for feedback by voting
+     * @param Client
+     * @param int user's id
+     * @param int quiz id
+     * @return void
+     */
+
+    private function finishQuiz(Client $bot, int $user_id, int $quiz_id): void
     {
         $current_user_quiz = CurrentUserQuiz::where('user_id', $user_id)->where('quiz_id', $quiz_id)->get();
 
@@ -167,7 +221,15 @@ class ShowQuizController extends Controller
             Пожалуйста, оцените викторину;)", null, false, null, $keyboard);
     }
 
-    private function scoreCount($user_id, $quiz_id, $current_user_quiz): int
+    /**
+     * Returns user's score
+     * @param int user's id
+     * @param int quiz id
+     * @param CurrentUserQuiz rows with user's passed questions
+     * @return int user's score
+     */
+
+    private function scoreCount(int $user_id, int $quiz_id, CurrentUserQuiz $current_user_quiz): int
     {
         $score = 0;
 

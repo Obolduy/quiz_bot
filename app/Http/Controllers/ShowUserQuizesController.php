@@ -4,11 +4,19 @@ namespace App\Http\Controllers;
 
 use App\Models\{Quizes, QuizStars};
 use Illuminate\Support\Facades\Redis;
-use TelegramBot\Api\Types\ReplyKeyboardMarkup;
+use TelegramBot\Api\Client;
+use TelegramBot\Api\Types\{Message, ReplyKeyboardMarkup, Update};
 
 class ShowUserQuizesController extends Controller
 {
-    public function showUserQuizes($message, $bot)
+    /**
+     * Shows list of user's quizes
+     * @param Message
+     * @param Client
+     * @return void
+     */
+
+    public function showUserQuizes(Message $message, Client $bot): void
     {
         $id = $message->getChat()->getId();
 
@@ -30,7 +38,14 @@ class ShowUserQuizesController extends Controller
         $bot->sendMessage($id, 'Выберите викторину, чтобы начать с ней взаимодействие', null, false, null, $keyboard);
     }
 
-    public function selectUserQuiz($update, $bot)
+    /**
+     * Selects quiz and waits for commands
+     * @param Update
+     * @param Client
+     * @return void
+     */
+
+    public function selectUserQuiz(Update $update, Client $bot): void
     {
         $message = $update->getMessage();
         $id = $message->getChat()->getId();
@@ -49,7 +64,13 @@ class ShowUserQuizesController extends Controller
         }
     }
 
-    private function getQuizStars($quiz_id): string
+    /**
+     * Get quiz rating by id
+     * @param int quiz id
+     * @return string quiz rating
+     */
+
+    private function getQuizStars(int $quiz_id): string
     {
         $stars = QuizStars::where("quiz_id", $quiz_id)->first();
         $stars_avg = $stars->stars_avg;

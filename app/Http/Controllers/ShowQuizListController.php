@@ -3,12 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Models\Quizes;
+use Countable;
 use Illuminate\Support\Facades\Redis;
-use TelegramBot\Api\Types\ReplyKeyboardMarkup;
+use TelegramBot\Api\Client;
+use TelegramBot\Api\Types\{Message, ReplyKeyboardMarkup};
 
 class ShowQuizListController extends Controller
 {
-    public function showQuizes($message, $bot)
+    /**
+     * Shows list of quizes sorted by 5 quizes per page
+     * @param Message
+     * @param Client
+     * @return void
+     */
+
+    public function showQuizes(Message $message, Client $bot): void
     {
         if (Redis::hget($message->getChat()->getId(), 'status_id') != '9') {
             Redis::hmset($message->getChat()->getId(), 'status_id', '2');
@@ -54,7 +63,14 @@ class ShowQuizListController extends Controller
             "\xE2\x9C\x85 *Выберите викторину*", 'markdown', false, null, $keyboard);
     }
 
-    private function paginateQuiz($id, $page)
+    /**
+     * Paginate quizes by date or average rating (differentiating by status_id)
+     * @param int user's id
+     * @param int page number
+     * @return void
+     */
+
+    private function paginateQuiz(int $id, int $page): Countable
     {
         $pageFrom = ($page * 5) - 5; // вывод по 5 квизов
         $pageTo = 5;

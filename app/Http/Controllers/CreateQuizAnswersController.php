@@ -3,10 +3,19 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Redis;
+use TelegramBot\Api\Client;
+use TelegramBot\Api\Types\{Message, Update};
 
 class CreateQuizAnswersController extends Controller
 {
-    public function createQuizAnswerStart($message, $bot)
+    /**
+     * Sends first question and waits for the message that will be the first answer for it
+     * @param Message
+     * @param Client
+     * @return void
+     */
+
+    public function createQuizAnswerStart(Message $message, Client $bot): void
     {
         $id = $message->getChat()->getId();
         Redis::hmset($id, 'status_id', '7');
@@ -28,7 +37,14 @@ class CreateQuizAnswersController extends Controller
             Для начала, введите первый ответ на Ваш вопрос \"{$questions['question_1']}\"");
     }
 
-    public function createQuizAnswers($update, $bot)
+    /**
+     * Takes user message and adds it into DB as an answer
+     * @param Update
+     * @param Client
+     * @return void
+     */
+
+    public function createQuizAnswers(Update $update, Client $bot): void
     {
         $message = $update->getMessage();
         $id = $message->getChat()->getId();

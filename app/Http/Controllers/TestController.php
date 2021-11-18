@@ -20,6 +20,8 @@ class TestController extends Controller
 
     public function test(Request $request)
     {   
-        
+        foreach (Quizes::find(7) as $elem) {
+            echo $elem->id;
+        }
     }  
 }

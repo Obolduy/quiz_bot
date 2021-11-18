@@ -4,10 +4,19 @@ namespace App\Http\Controllers;
 
 use App\Models\{Answers, CorrectAnswers, QuestionPictures, Questions, Quizes, QuizStars};
 use Illuminate\Support\Facades\{Redis, DB};
+use TelegramBot\Api\Client;
+use TelegramBot\Api\Types\Message;
 
 class CreateQuizController extends Controller
 {
-    public function createQuizStart($message, $bot)
+    /**
+     * Starts creating quiz
+     * @param Message
+     * @param Client
+     * @return void
+     */
+
+    public function createQuizStart(Message $message, Client $bot): void
     {
         Redis::hmset($message->getChat()->getId(), 'status_id', '5');
 
@@ -16,7 +25,13 @@ class CreateQuizController extends Controller
                 Пожалуйста, будьте корректны в выборе наименования:)');
     }
 
-    public function createQuizDone($id)
+    /**
+     * Adds new quiz data from Redis into DB 
+     * @param int user's id
+     * @return void
+     */
+
+    public function createQuizDone(int $id): void
     {
         DB::transaction(function () use ($id) {
             $quiz = Quizes::create([

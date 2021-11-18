@@ -4,10 +4,19 @@ namespace App\Http\Controllers;
 
 use App\Models\Quizes;
 use Illuminate\Support\Facades\Redis;
+use TelegramBot\Api\Client;
+use TelegramBot\Api\Types\Update;
 
 class CreateQuizNameController extends Controller
 {
-    public function createQuizName($update, $bot)
+    /**
+     * Sets quiz name by user's message
+     * @param Update
+     * @param Client
+     * @return void
+     */
+
+    public function createQuizName(Update $update, Client $bot): void
     {
         $message = $update->getMessage();
         $id = $message->getChat()->getId();

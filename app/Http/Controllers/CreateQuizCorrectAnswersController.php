@@ -4,10 +4,19 @@ namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Redis;
 use App\Http\Controllers\CreateQuizController;
+use TelegramBot\Api\Client;
+use TelegramBot\Api\Types\Update;
 
 class CreateQuizCorrectAnswersController extends Controller
 {
-    public function createQuizCorrectAnswers($update, $bot)
+    /**
+     * Sends answers list and signs correct by user's message
+     * @param Update
+     * @param Client
+     * @return void
+     */
+
+    public function createQuizCorrectAnswers(Update $update, Client $bot): void
     {
         $message = $update->getMessage();
         $id = $message->getChat()->getId();
@@ -22,6 +31,8 @@ class CreateQuizCorrectAnswersController extends Controller
 
         $message_array = str_split(str_replace([' ', ',', '.'], '', (int)$message_text));
 
+        // если пользователь написал "готов", отправляем ему список вопросов с ответами,
+        // если сообщение иное - бот ожидает, что это номера правильных ответов
         if (count($answers) == count($message_array) && 'готов' !== mb_strtolower($message_text, 'UTF-8')) {
             for ($i = 0; $i <= count($message_array); $i++) {
                 $number = $i + 1;

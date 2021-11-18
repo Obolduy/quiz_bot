@@ -3,10 +3,19 @@
 namespace App\Http\Controllers;
 
 use App\Models\{Quizes, Questions};
+use TelegramBot\Api\Client;
+use TelegramBot\Api\Types\Message;
 
 class ShowUserResults extends Controller
 {
-    public function showResults($message, $bot)
+    /**
+     * Sends to user his scores
+     * @param Message
+     * @param Client
+     * @return void
+     */
+
+    public function showResults(Message $message, Client $bot): void
     {
         $results = Quizes::select('passed_quizes.*', 'quizes.name')
                     ->leftJoin('passed_quizes', 'quizes.id', '=', 'passed_quizes.passed_quiz_id')

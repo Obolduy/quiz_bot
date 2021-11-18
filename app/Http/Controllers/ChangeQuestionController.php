@@ -4,12 +4,20 @@ namespace App\Http\Controllers;
 
 use App\Models\{Questions, QuestionPictures};
 use Illuminate\Support\Facades\Redis;
-use TelegramBot\Api\Types\ReplyKeyboardMarkup;
+use TelegramBot\Api\Client;
+use TelegramBot\Api\Types\{ReplyKeyboardMarkup, Update};
 use TelegramBot\Api\Types\InputMedia\{ArrayOfInputMedia, InputMediaPhoto};
 
 class ChangeQuestionController extends Controller
 {
-    public function changeQuestion($update, $bot)
+    /**
+     * Sends question list and signs new question (and picture) into DB
+     * @param Update
+     * @param Client
+     * @return void
+     */
+
+    public function changeQuestion(Update $update, Client $bot): void
     {
         $message = $update->getMessage();
         $id = $message->getChat()->getId();
@@ -69,7 +77,15 @@ class ChangeQuestionController extends Controller
         }
     }
 
-    private function sendQuestionsList($bot, $user_id, array $questions_list): void
+    /**
+     * Sends keyboard with questions list
+     * @param Client
+     * @param int user's id
+     * @param array list of questions by quiz id
+     * @return void
+     */
+
+    private function sendQuestionsList(Client $bot, int $user_id, array $questions_list): void
     {
         $keyboard = new ReplyKeyboardMarkup(
             [
@@ -81,7 +97,15 @@ class ChangeQuestionController extends Controller
         $bot->sendMessage($user_id, 'Выберите, какой вопрос Вы хотите отредактировать', null, false, null, $keyboard);
     }
 
-    private function sendQuestionsPictures($bot, $user_id, array $questions_pictures): void
+    /**
+     * Sends question's pictures
+     * @param Client
+     * @param int user's id
+     * @param array question text => picture name
+     * @return void
+     */
+
+    private function sendQuestionsPictures(Client $bot, int $user_id, array $questions_pictures): void
     {
         $question_text = "К следующим вопросам имеются изображения: \n";
 
@@ -95,7 +119,17 @@ class ChangeQuestionController extends Controller
         $bot->sendMediaGroup($user_id, $media);
     }
 
-    private function rememberSelectedQuestionId($bot, $message_text, $user_id, $questions, $questions_list): void
+    /**
+     * Sets question id into Redis
+     * @param Client
+     * @param string user's message
+     * @param int user's id
+     * @param Questions questions by quiz id
+     * @param array array with questions names
+     * @return void
+     */
+
+    private function rememberSelectedQuestionId(Client $bot, string $message_text, int $user_id, Questions $questions, array $questions_list): void
     {
         if (in_array($message_text, $questions_list)) {
             foreach ($questions as $question) {
@@ -115,7 +149,14 @@ class ChangeQuestionController extends Controller
         }
     }
 
-    private function setNewQuestionTitle(string $message_text, $question): void
+    /**
+     * Adds '?' if required into new question text and saves it into DB 
+     * @param string user's message
+     * @param Questions selected row from questions table
+     * @return void
+     */
+
+    private function setNewQuestionTitle(string $message_text, Questions $question): void
     {
         $message_array = str_split($message_text);
 

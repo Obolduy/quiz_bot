@@ -3,11 +3,19 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Redis;
-use TelegramBot\Api\Types\ReplyKeyboardMarkup;
+use TelegramBot\Api\Client;
+use TelegramBot\Api\Types\{Message, ReplyKeyboardMarkup, Update};
 
 class ChangeQuizController extends Controller
 {
-    public function changeQuizStart($message, $bot)
+    /**
+     * Sends keyboard with list of change options
+     * @param Message
+     * @param Client
+     * @return void
+     */
+
+    public function changeQuizStart(Message $message, Client $bot): void
     {
         $id = $message->getChat()->getId();
 
@@ -23,7 +31,14 @@ class ChangeQuizController extends Controller
         $bot->sendMessage($id, 'Выберите, что Вы хотите отредактировать: название, вопрос или ответ?', null, false, null, $keyboard);
     }
 
-    public function chooseWhatToChange($update, $bot)
+    /**
+     * Takes user's message and switches it to change quiz name, question or answer
+     * @param Update
+     * @param Client
+     * @return void
+     */
+
+    public function chooseWhatToChange(Update $update, Client $bot): void
     {
         $message = $update->getMessage();
         $id = $message->getChat()->getId();
