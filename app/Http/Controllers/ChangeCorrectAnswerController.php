@@ -26,13 +26,11 @@ class ChangeCorrectAnswerController extends Controller
 
         $questions_list = [];
         foreach ($questions as $question) {
-            $questions_list[] = $question->question;
+            $questions_list[] = [$question->question];
         }
 
         $keyboard = new ReplyKeyboardMarkup(
-            [
-                $questions_list
-            ], 
+            $questions_list, 
             true
         );
 
@@ -64,9 +62,9 @@ class ChangeCorrectAnswerController extends Controller
         $answers_list = [];
         foreach ($answers as $answer) {
             if ($answer->id == $correct_answer->answer_id) {
-                $answers_list[] = $answer->answer . ' (Правильный)';
+                $answers_list[] = [$answer->answer . ' (Правильный)'];
             } else {
-                $answers_list[] = $answer->answer;
+                $answers_list[] = [$answer->answer];
             }
         }
 
@@ -119,12 +117,7 @@ class ChangeCorrectAnswerController extends Controller
 
     private function showAnswers(array $answers_list, int $user_id, Client $bot): void
     {
-        $keyboard = new ReplyKeyboardMarkup(
-            [
-                $answers_list
-            ], 
-            true
-        );
+        $keyboard = new ReplyKeyboardMarkup($answers_list, true);
 
         Redis::hmset($user_id, 'status_id', '20');
         

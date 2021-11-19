@@ -195,13 +195,11 @@ class ShowQuizController extends Controller
         ]);
 
         foreach ($answers as $answer) {
-            $answer_list[] = $answer->answer;
+            $answer_list[] = [$answer->answer];
         }
 
         return new ReplyKeyboardMarkup(
-            [
-                $answer_list
-            ], true
+            $answer_list, true
         );
     }
 

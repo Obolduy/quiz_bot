@@ -35,7 +35,7 @@ class ShowQuizListController extends Controller
 
         $quizes_count = 0;
         foreach ($quizes as $quiz) {
-            $quiz_list[] = 'Викторина ' . ++$quizes_count;
+            $quiz_list[] = ['Викторина ' . ++$quizes_count];
 
             Redis::hset($message->getChat()->getId().'_quizes_pagination', $quizes_count, $quiz->name);
 
@@ -45,18 +45,14 @@ class ShowQuizListController extends Controller
         }
 
         if ((int)$page !== 1) {
-            $quiz_list[] = 'Назад';
+            $quiz_list[] = ['Назад'];
         }
 
         if (count($quizes) >= 5) {
-            $quiz_list[] = 'Далее';
+            $quiz_list[] = ['Далее'];
         }
 
-        $keyboard = new ReplyKeyboardMarkup(
-            [
-                $quiz_list
-            ], true
-        );
+        $keyboard = new ReplyKeyboardMarkup($quiz_list, true);
         
         $bot->sendMessage($message->getChat()->getId(), trim($quiz_message), 'markdown');
 

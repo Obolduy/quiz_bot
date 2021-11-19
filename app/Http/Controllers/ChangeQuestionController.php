@@ -32,7 +32,7 @@ class ChangeQuestionController extends Controller
 
         $questions_pictures = [];
         foreach ($questions as $question) {
-            $questions_list[] = $question->question;
+            $questions_list[] = [$question->question];
 
             $picture = QuestionPictures::where('question_id', $question->id)->value('picture');
 
@@ -87,12 +87,7 @@ class ChangeQuestionController extends Controller
 
     private function sendQuestionsList(Client $bot, int $user_id, array $questions_list): void
     {
-        $keyboard = new ReplyKeyboardMarkup(
-            [
-                $questions_list
-            ], 
-            true
-        );
+        $keyboard = new ReplyKeyboardMarkup($questions_list, true);
 
         $bot->sendMessage($user_id, 'Выберите, какой вопрос Вы хотите отредактировать', null, false, null, $keyboard);
     }
