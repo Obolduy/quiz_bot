@@ -24,38 +24,24 @@ class PaginationController extends Controller
         $whereField = $whereCase[0] ?? null;
         $whereValue = $whereCase[1] ?? null;
 
-        if (Redis::hget($id, 'status_id') == '9') { // сортировка по дате добавления (id)
-            $quizes = Quizes::offset($pageFrom)
-                        ->where($whereField, $whereValue)
-                        ->orderBy('id', 'desc')
-                        ->limit($pageTo)
-                        ->get();
+        $orderBy = (Redis::hget($id, 'status_id') == '9') ? ['id', 'desc'] : ['quiz_stars.stars_avg', 'desc'];
 
-            if (!$quizes) {
-                $quizes = Quizes::offset($page)
-                        ->where($whereField, $whereValue)
-                        ->orderBy('id', 'desc')
-                        ->limit($pageTo)
-                        ->get();
-            }
-        } else { // сортировка по средней оценке
+        $quizes = Quizes::select('quizes.*', 'quiz_stars.stars_avg')
+            ->where($whereField, $whereValue)
+            ->offset($pageFrom)
+            ->leftJoin('quiz_stars', 'quizes.id', '=', 'quiz_stars.quiz_id')
+            ->orderBy($orderBy[0], $orderBy[1])
+            ->limit($pageTo)
+            ->get();
+
+        if (!$quizes) {
             $quizes = Quizes::select('quizes.*', 'quiz_stars.stars_avg')
-                ->where($whereField, $whereValue)
-                ->offset($pageFrom)
-                ->leftJoin('quiz_stars', 'quizes.id', '=', 'quiz_stars.quiz_id')
-                ->orderBy('quiz_stars.stars_avg', 'desc')
-                ->limit($pageTo)
-                ->get();
-
-            if (!$quizes) {
-                $quizes = Quizes::select('quizes.*', 'quiz_stars.stars_avg')
-                        ->where($whereField, $whereValue)
-                        ->offset($page)
-                        ->leftJoin('quiz_stars', 'quizes.id', '=', 'quiz_stars.quiz_id')
-                        ->orderBy('quiz_stars.stars_avg', 'desc')
-                        ->limit($pageTo)
-                        ->get();
-            }
+                    ->where($whereField, $whereValue)
+                    ->offset($page)
+                    ->leftJoin('quiz_stars', 'quizes.id', '=', 'quiz_stars.quiz_id')
+                    ->orderBy($orderBy[0], $orderBy[1])
+                    ->limit($pageTo)
+                    ->get();
         }
 
         return $quizes; 

@@ -31,8 +31,11 @@ class ShowUserQuizesController extends Controller
 
         Redis::hmset($id, 'status_id', '11');
 
+        $quizes_count = 0;
         foreach ($quizes as $quiz) {
-            $quiz_list[] = $quiz->name;
+            $quiz_list[] = 'Викторина ' . ++$quizes_count;
+
+            Redis::hset($message->getChat()->getId().'_quizes_pagination', $quizes_count, $quiz->name);
         }
 
         if ((int)$page !== 1) {
@@ -65,6 +68,18 @@ class ShowUserQuizesController extends Controller
         $message = $update->getMessage();
         $id = $message->getChat()->getId();
         $message_text = trim(strip_tags($message->getText()));
+
+        if (!in_array(mb_strtolower($message_text, 'UTF-8'), ['далее', 'назад'])) {
+            $message_text = preg_replace('#\D#u', '', $message_text);
+
+            $quizes = Redis::hgetall($id.'_quizes_pagination');
+
+            foreach ($quizes as $number => $question_name) {
+                if ($message_text == $number) {
+                    $message_text = $question_name;
+                }
+            }
+        }
 
         $quiz = Quizes::where('name', $message_text)->where('creator_id', $id)->first();
 

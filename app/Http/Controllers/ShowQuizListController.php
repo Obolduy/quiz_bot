@@ -33,8 +33,11 @@ class ShowQuizListController extends Controller
         $quiz_list = [];
         $quiz_message = '';
 
+        $quizes_count = 0;
         foreach ($quizes as $quiz) {
-            $quiz_list[] = $quiz->name;
+            $quiz_list[] = 'Викторина ' . ++$quizes_count;
+
+            Redis::hset($message->getChat()->getId().'_quizes_pagination', $quizes_count, $quiz->name);
 
             $grade = $quiz->stars_avg ?? 'Пока никто не поставил оценку:(';
 

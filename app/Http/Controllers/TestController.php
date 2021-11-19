@@ -20,15 +20,12 @@ class TestController extends Controller
 
     public function test(Request $request)
     {   
-        $quizes = Quizes::select('*')
-                        ->where(null, null)
-                        ->offset(0)
-                        ->orderBy('id', 'desc')
-                        ->limit(5)
-                        ->get();
+        $id = 810293946;
+        
+        $current_user_quiz = CurrentUserQuiz::where('user_id', $id)->where('quiz_id', 5)->get();
 
-        foreach ($quizes as $quiz) {
-            echo $quiz->id . '<br>';
-        }
+
+        var_dump($current_user_quiz);
+
     }  
 }

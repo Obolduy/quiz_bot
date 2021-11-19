@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\{Quizes, Questions, Answers, PassedQuizes, CurrentUserQuiz, CorrectAnswers, QuestionPictures, QuizStars};
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Redis;
 use TelegramBot\Api\Client;
 use TelegramBot\Api\Types\InputMedia\{ArrayOfInputMedia, InputMediaPhoto};
@@ -22,6 +23,18 @@ class ShowQuizController extends Controller
         $message = $update->getMessage();
         $id = $message->getChat()->getId();
         $message_text = trim(strip_tags($message->getText()));
+
+        if (!in_array(mb_strtolower($message_text, 'UTF-8'), ['далее', 'назад'])) {
+            $message_text = preg_replace('#\D#u', '', $message_text);
+
+            $quizes = Redis::hgetall($id.'_quizes_pagination');
+
+            foreach ($quizes as $number => $question_name) {
+                if ($message_text == $number) {
+                    $message_text = $question_name;
+                }
+            }
+        }
 
         $quiz = Quizes::where('name', $message_text)->first();
 
@@ -73,7 +86,7 @@ class ShowQuizController extends Controller
             $passed_questions = CurrentUserQuiz::where('user_id', $id)->where('passed_question_id', $question->id)
                                 ->first();
 
-            if (!$passed_questions) { // проверка, есть ли айди вопроса в числе отвеченныъ
+            if (!$passed_questions) { // проверка, есть ли айди вопроса в числе отвеченных
                 $question_text = $question->question;
                 $picture = QuestionPictures::where('question_id', $question->id)->value('picture');
 
@@ -140,6 +153,7 @@ class ShowQuizController extends Controller
     {
         Redis::hset($user_id, 'status_id', '3');
         Redis::hset($user_id, "quiz_id", $quiz_id);
+        Redis::del($user_id.'_quizes_pagination');
 
         $bot->sendMessage($user_id, "Напишите 'Начать', чтобы начать викторину. \n Чтобы выйти, напишите /drop_quiz");
     }
@@ -225,11 +239,11 @@ class ShowQuizController extends Controller
      * Returns user's score
      * @param int user's id
      * @param int quiz id
-     * @param CurrentUserQuiz rows with user's passed questions
+     * @param Collection rows with user's passed questions
      * @return int user's score
      */
 
-    private function scoreCount(int $user_id, int $quiz_id, CurrentUserQuiz $current_user_quiz): int
+    private function scoreCount(int $user_id, int $quiz_id, Collection $current_user_quiz): int
     {
         $score = 0;
 

@@ -40,6 +40,7 @@ Route::any('/', function () {
 
     $bot->command('start', function ($message) use ($bot) {
         Redis::del($message->getChat()->getId());
+        Redis::del($message->getChat()->getId()."_quizes_pagination");
         Redis::hmset($message->getChat()->getId(), 'status_id', '1');
 
         $bot->sendMessage($message->getChat()->getId(),
