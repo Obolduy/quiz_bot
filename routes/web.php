@@ -56,12 +56,19 @@ Route::any('/', function () {
     });
 
     $bot->command('sort_date', function ($message) use ($bot) {
-        if (Redis::hget($message->getChat()->getId(), 'status_id') != 2) {
+        $status = Redis::hget($message->getChat()->getId(), 'status_id');
+
+        if ($status != 2 && $status != 11) {
             $bot->sendMessage($message->getChat()->getId(), 'Эту команду нельзя применить в данном контексте'); die();
         }
 
         Redis::hmset($message->getChat()->getId(), 'status_id', '9');
-        (new ShowQuizListController)->showQuizes($message, $bot);
+
+        if ($status == 2) {
+            (new ShowQuizListController)->showQuizes($message, $bot);
+        } else {
+            (new ShowUserQuizesController)->showUserQuizes($message, $bot);
+        }
     });
 
     $bot->command('quiz_create', function ($message) use ($bot) {

@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Quizes;
-use Countable;
 use Illuminate\Support\Facades\Redis;
 use TelegramBot\Api\Client;
 use TelegramBot\Api\Types\{Message, ReplyKeyboardMarkup};
@@ -30,7 +28,7 @@ class ShowQuizListController extends Controller
                 "Чтобы *отсортировать викторины* по _дате добавления_, введите /sort\_date, чтобы *сортировать* _как обычно_ - /quiz\_list", 'markdown');
         }
 
-        $quizes = $this->paginateQuiz($message->getChat()->getId(), $page);
+        $quizes = (new PaginationController)->paginateQuiz($message->getChat()->getId(), $page, null);
 
         $quiz_list = [];
         $quiz_message = '';
@@ -61,50 +59,5 @@ class ShowQuizListController extends Controller
 
         $bot->sendMessage($message->getChat()->getId(),
             "\xE2\x9C\x85 *Выберите викторину*", 'markdown', false, null, $keyboard);
-    }
-
-    /**
-     * Paginate quizes by date or average rating (differentiating by status_id)
-     * @param int user's id
-     * @param int page number
-     * @return void
-     */
-
-    private function paginateQuiz(int $id, int $page): Countable
-    {
-        $pageFrom = ($page * 5) - 5; // вывод по 5 квизов
-        $pageTo = 5;
-
-        if (Redis::hget($id, 'status_id') == '9') { // сортировка по дате добавления (id)
-            $quizes = Quizes::offset($pageFrom)
-                        ->orderBy('id', 'desc')
-                        ->limit($pageTo)
-                        ->get();
-
-            if (!$quizes) {
-                $quizes = Quizes::offset($page)
-                        ->orderBy('id', 'desc')
-                        ->limit($pageTo)
-                        ->get();
-            }
-        } else { // сортировка по средней оценке
-            $quizes = Quizes::select('quizes.*', 'quiz_stars.stars_avg')
-                ->offset($pageFrom)
-                ->leftJoin('quiz_stars', 'quizes.id', '=', 'quiz_stars.quiz_id')
-                ->orderBy('quiz_stars.stars_avg', 'desc')
-                ->limit($pageTo)
-                ->get();
-
-            if (!$quizes) {
-                $quizes = Quizes::select('quizes.*', 'quiz_stars.stars_avg')
-                        ->offset($page)
-                        ->leftJoin('quiz_stars', 'quizes.id', '=', 'quiz_stars.quiz_id')
-                        ->orderBy('quiz_stars.stars_avg', 'desc')
-                        ->limit($pageTo)
-                        ->get();
-            }
-        }
-
-        return $quizes; 
     }
 }

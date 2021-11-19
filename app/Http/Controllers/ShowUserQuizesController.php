@@ -20,12 +20,27 @@ class ShowUserQuizesController extends Controller
     {
         $id = $message->getChat()->getId();
 
-        $quizes = Quizes::where('creator_id', $id)->get();
+        $page = Redis::hget($id, 'page') ?? 1;
+
+        if ($page === 1) {
+            $bot->sendMessage($id,
+                "Чтобы *отсортировать викторины* по _дате добавления_, введите /sort\_date, чтобы *сортировать* _как обычно_ - /my\_quizes", 'markdown');
+        }
+
+        $quizes = (new PaginationController)->paginateQuiz($id, $page, ['creator_id', $id]);
 
         Redis::hmset($id, 'status_id', '11');
 
         foreach ($quizes as $quiz) {
             $quiz_list[] = $quiz->name;
+        }
+
+        if ((int)$page !== 1) {
+            $quiz_list[] = 'Назад';
+        }
+
+        if (count($quizes) >= 5) {
+            $quiz_list[] = 'Далее';
         }
 
         $keyboard = new ReplyKeyboardMarkup(
@@ -59,6 +74,16 @@ class ShowUserQuizesController extends Controller
             $stars = $this->getQuizStars($quiz->id);
 
             $bot->sendMessage($id, "\xE2\x9C\x85 Вы выбрали Вашу викторину *{$quiz->name}*.\n\xE2\xAD\x90 $stars\n\xF0\x9F\x93\x9D Чтобы *отредактировать викторину*, напишите /quiz\_change\n\xE2\x9D\x8E Чтобы *удалить викторину*, напишите /quiz\_delete\n\xE2\x9D\x93 Чтобы *пройти викторину самостоятельно*, напишите /quiz\_start", 'markdown');
+        } else if ($message_text == 'Далее') {
+            (int)$page = Redis::hget($id, 'page') ?? 1;
+            Redis::hset($id, 'page', ++$page);
+
+            $this->showUserQuizes($message, $bot);
+        } else if ($message_text == 'Назад') {
+            (int)$page = Redis::hget($id, 'page') ?? 1;
+            Redis::hset($id, 'page', --$page);
+
+            $this->showUserQuizes($message, $bot);  
         } else {
             $bot->sendMessage($id, 'Уточните название викторины');
         }
