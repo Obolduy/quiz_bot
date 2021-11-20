@@ -74,6 +74,7 @@ class DeleteQuizController extends Controller
             Redis::hset($id, 'status_id', 1);
 
             $bot->sendMessage($id, 'Вы успешно удалили викторину!');
+            (new MainController)->mainPage($bot, $message->getChat()->getId());
         } else {
             $bot->sendMessage($id, 'Удаление отменено');
         }

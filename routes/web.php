@@ -9,10 +9,8 @@ use App\Http\Controllers\{
     CreateQuizAnswersController, CreateQuizCorrectAnswersController, CreateQuizNameController,
     CreateQuizQuestionsController, ShowQuizListController, ShowUserResults, DeleteQuizController,
     ChangeQuizController, ChangeQuestionController, ChangeAnswerController, ChangeCorrectAnswerController,
-    TestController
+    MainController
 };
-
-Route::any('/biba', [TestController::class, 'test']);
 
 Route::any('/', function () {
     // 1 - Пользователь ввел '/start'
@@ -39,12 +37,7 @@ Route::any('/', function () {
     $bot = new Client('2073248573:AAF9U1RECKhm_uX0XXsFOUfR3tXXWn7_j8o');
 
     $bot->command('start', function ($message) use ($bot) {
-        Redis::del($message->getChat()->getId());
-        Redis::del($message->getChat()->getId()."_quizes_pagination");
-        Redis::hmset($message->getChat()->getId(), 'status_id', '1');
-
-        $bot->sendMessage($message->getChat()->getId(),
-            "\xF0\x9F\x86\x95 Чтобы *создать викторину*, напишите /quiz\_create \n\xE2\x9C\x85 Чтобы *выбрать готовую викторину*, напишите /quiz\_list \n\xF0\x9F\x8E\x93Чтобы *посмотреть Ваши созданные викторины*, напишите /my\_quizes", 'markdown');
+        (new MainController)->mainPage($bot, $message->getChat()->getId());
     });
 
     $bot->command('help', function ($message) use ($bot) {
@@ -140,6 +133,8 @@ Route::any('/', function () {
         }
 
         $bot->sendMessage($message->getChat()->getId(), 'Тест успешно отменен!');
+
+        (new MainController)->mainPage($bot, $message->getChat()->getId());
     });
     
     $bot->on(function (Update $update) use ($bot) {
@@ -205,6 +200,4 @@ Route::any('/', function () {
     });
     
     $bot->run();
-    // Applications/ngrok http test_bot.local
-    // 'https://api.telegram.org/bot2073248573:AAF9U1RECKhm_uX0XXsFOUfR3tXXWn7_j8o/setWebhook?url=https://1784-178-66-224-250.ngrok.io'
 });

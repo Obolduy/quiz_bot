@@ -44,10 +44,11 @@ class CreateQuizCorrectAnswersController extends Controller
             }
 
             (new CreateQuizController)->createQuizDone($id);
-            Redis::hmset($id, 'status_id', '1');
 
             $bot->sendMessage($id, "Поздравляем! Ваша викторина успешно создана,
                 Вы можете посмотреть все созданные викторины с помощью команды /my_quizes");
+
+            (new MainController)->mainPage($bot, $message->getChat()->getId());
         } else {
             $variables = '';
 
