@@ -142,6 +142,9 @@ Route::any('/', function () {
         $id = $message->getChat()->getId();
 
         switch (Redis::hmget($id, 'status_id')[0]) {
+            case 1:
+                (new MainController)->mainPage($bot, $id);
+                break;
             case 2:
             case 9:
             case 10:
