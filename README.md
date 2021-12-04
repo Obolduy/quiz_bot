@@ -1,7 +1,7 @@
 <ul>
     <li>PHP: PHP 7.3</li>
     <li>Framework: Laravel 8</li>
-    <li>DB: MySQL 8, Redis</li>
+    <li>DB: MySQL 8, Redis 5.0</li>
     <li>Server: Apache 2.4</li>
     <li>Requires: <a href="https://github.com/TelegramBot/Api">Telegram Bot Api</a></li>
 </ul>
@@ -47,3 +47,7 @@
     <li><b>/results</b> - Show user's results</li>
     <li><b>/drop_quiz</b> - Stop passing quiz</li>
 </ol>
+<p>As you can see, I used MySQL 8, but in docker-compose.yml I'm using 5.7. So because of this DB dump using only CREATE TABLE and INSERT commands.</p>
+
+<h2>Run</h2>
+<p>You can run this app via docker-compose up and try it on <a href="http://127.0.0.1:8000">http://127.0.0.1:8000</a>. After it you can create telegram bot and set webhook. But better clone this repo, change .env.example to .env and try it via ngrok for example.</p>

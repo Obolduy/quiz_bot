@@ -1,0 +1,38 @@
+version: "3.9"
+
+services:
+  server:
+    depends_on:
+      - db
+      - redis
+    build: .
+    ports:
+      - "8000:80"
+    restart: always
+    volumes:
+      - ${PWD}/conf/vhost.conf:/etc/apache2/sites-enabled/000-default.conf
+      - ${PWD}/conf/hosts:/etc/hosts
+    networks:
+      - telegram_docker_network
+
+  db:
+    image: mysql:5.7
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 1111
+      MYSQL_DATABASE: telegram
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    volumes:
+      - ${PWD}/conf/db-dump.sql:/docker-entrypoint-initdb.d/testdump.sql
+    networks:
+      - telegram_docker_network
+
+  redis:
+    image: redis:5.0
+    restart: always
+    networks:
+      - telegram_docker_network
+
+networks:
+  telegram_docker_network:
